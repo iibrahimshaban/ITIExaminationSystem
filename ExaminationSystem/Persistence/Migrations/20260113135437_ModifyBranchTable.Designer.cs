@@ -4,6 +4,7 @@ using ExaminationSystem.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExaminationSystem.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260113135437_ModifyBranchTable")]
+    partial class ModifyBranchTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -219,8 +222,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly?>("CreationDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsCurrentlyOffered")
                         .HasColumnType("bit");
@@ -314,8 +317,8 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateOnly>("AssignedAt")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
@@ -346,7 +349,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -394,8 +397,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly?>("DateOfBirth")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -405,8 +408,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.Property<bool?>("Gender")
                         .HasColumnType("bit");
 
-                    b.Property<DateOnly?>("HireDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("HireDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("JobTitles")
                         .HasColumnType("nvarchar(max)");
@@ -420,8 +423,8 @@ namespace ExaminationSystem.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Salary")
-                        .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<string>("UserId")
                         .HasMaxLength(450)
@@ -489,8 +492,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly?>("DateOfBirth")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateOnly>("EnrollmentDate")
                         .HasColumnType("date");
@@ -589,15 +592,11 @@ namespace ExaminationSystem.Persistence.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<DateOnly?>("CompletionDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("CompletionDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
-
-                    b.Property<decimal?>("CourseworkGrade")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
 
                     b.Property<decimal?>("ExamGrade")
                         .HasPrecision(5, 2)
@@ -610,8 +609,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateOnly?>("StartDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .HasMaxLength(50)
@@ -643,10 +642,16 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<DateTime?>("AnsweredAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("DurationTakenSeconds")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ExamId")
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExamId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Grade")
@@ -695,6 +700,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -864,13 +870,13 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Branch", "Branch")
                         .WithMany("BranchTracks")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ExaminationSystem.Entities.Track", "Track")
                         .WithMany("BranchTracks")
                         .HasForeignKey("TrackId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
@@ -883,7 +889,7 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Question", "Question")
                         .WithMany("Choices")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -903,13 +909,13 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Course", "Course")
                         .WithMany("CourseInstructors")
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ExaminationSystem.Entities.Instructor", "Instructor")
                         .WithMany("CourseInstructors")
                         .HasForeignKey("InstructorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -922,7 +928,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Course", "Course")
                         .WithMany("Exams")
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("ExaminationSystem.Entities.Instructor", "Instructor")
                         .WithMany()
@@ -957,7 +964,7 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Exam", "Exam")
                         .WithMany("Questions")
                         .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Exam");
@@ -1008,7 +1015,7 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Submission", "Submission")
                         .WithMany("Answers")
                         .HasForeignKey("SubmissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -1042,12 +1049,13 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Exam", "Exam")
                         .WithMany("Submissions")
                         .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("ExaminationSystem.Entities.Student", "Student")
                         .WithMany("Submissions")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Exam");
@@ -1060,7 +1068,7 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasOne("ExaminationSystem.Entities.Course", "Course")
                         .WithMany("Topics")
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Course");

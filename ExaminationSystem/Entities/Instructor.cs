@@ -9,10 +9,10 @@ public class Instructor
     public string? JobTitles { get; set; }
     public decimal? Salary { get; set; }
     public bool? Gender { get; set; }
-    public DateTime? HireDate { get; set; }
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? HireDate { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public string? Qualification { get; set; }
-    public string UserId { get; set; } = null!;
+    public string? UserId { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
 
     public Branch Branch { get; set; } = default!;

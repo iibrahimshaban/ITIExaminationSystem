@@ -22,11 +22,6 @@ public class ExamConfiguration : IEntityTypeConfiguration<Exam>
 
 
 
-        // 1. Relationship: Exam belongs to one Course
-        builder.HasOne(e => e.Course)
-               .WithMany(c => c.Exams)                    // assuming Course has ICollection<Exam> Exams
-               .HasForeignKey(e => e.CourseId)
-               .OnDelete(DeleteBehavior.Restrict);        // Prevent deleting course if exams exist
 
         // 2. Relationship: Exam ← created by → Instructor (using CreatedBy as FK)
         builder.HasOne(e => e.Instructor)

@@ -23,6 +23,9 @@ public class StudentCourseConfiguration : IEntityTypeConfiguration<StudentCourse
         builder.Property(sc => sc.FinalGrade)
                .HasPrecision(5, 2);
 
+        builder.Property(sc => sc.CourseworkGrade)
+               .HasPrecision(5, 2);
+
         // 4. Important: Prevent duplicate enrollments
         // (one student cannot enroll in the same course twice)
         builder.HasIndex(sc => new { sc.StudentId, sc.CourseId })

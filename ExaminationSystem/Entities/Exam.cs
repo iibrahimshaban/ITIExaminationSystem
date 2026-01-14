@@ -3,7 +3,7 @@
 public class Exam
 {
     public int Id { get; set; }
-    public int CourseId { get; set; }
+    public int? CourseId { get; set; }
     public string Title { get; set; } = null!;
     public int DurationInMinutes { get; set; }
     public int TotalPoints { get; set; }

@@ -19,7 +19,6 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
                .HasMaxLength(100);
 
         builder.Property(s => s.UserId)
-               .IsRequired()
                .HasMaxLength(450); // standard for ASP.NET Identity UserId
 
         
@@ -39,7 +38,7 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.HasOne(s => s.User)
                .WithOne()                           // no collection on ApplicationUser side
                .HasForeignKey<Student>(s => s.UserId)
-               .OnDelete(DeleteBehavior.Cascade);   // usually cascade - if user deleted → student deleted
+               .OnDelete(DeleteBehavior.SetNull);   
 
         // Optional: if you want to prevent duplicate UserId
         builder.HasIndex(s => s.UserId)
@@ -49,11 +48,11 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.HasMany(s => s.StudentCourses)
                .WithOne(sc => sc.Student)
                .HasForeignKey(sc => sc.StudentId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasMany(s => s.Submissions)
                .WithOne(sub => sub.Student)
                .HasForeignKey(sub => sub.StudentId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.SetNull);
     }
 }

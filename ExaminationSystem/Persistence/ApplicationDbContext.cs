@@ -11,16 +11,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        var CascadedFKs = modelBuilder.Model
-        .GetEntityTypes()
-        .SelectMany(x => x.GetForeignKeys())
-        .Where(fk => fk.DeleteBehavior == DeleteBehavior.Cascade && !fk.IsOwnership);
-
-        foreach (var foreignKey in CascadedFKs)
-        {
-            foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
-        }
-
         base.OnModelCreating(modelBuilder);
     }
 

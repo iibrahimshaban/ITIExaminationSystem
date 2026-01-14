@@ -6,7 +6,7 @@ public class CourseInstructor
     public int CourseId { get; set; }
     public int InstructorId { get; set; }
     public string? Role { get; set; }
-    public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
+    public DateOnly AssignedAt { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
     public bool HadLeft { get; set; } = false;
 
     public Course Course { get; set; } = default!;

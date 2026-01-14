@@ -32,7 +32,7 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.HasMany(c => c.Exams)
                .WithOne(e => e.Course)
                .HasForeignKey(e => e.CourseId)
-               .OnDelete(DeleteBehavior.Restrict);     // Prevent deleting course if exams exist
+               .OnDelete(DeleteBehavior.SetNull);     // Prevent deleting course if exams exist
 
         // Relationship: Course → StudentCourses (enrollments)
         builder.HasMany(c => c.StudentCourses)

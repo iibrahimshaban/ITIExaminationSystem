@@ -10,7 +10,7 @@ public class InstructorConfiguration : IEntityTypeConfiguration<Instructor>
         builder.HasKey(i => i.Id);
 
         builder.Property(i => i.Salary)
-               .HasPrecision(4, 2);
+               .HasPrecision(8, 2);
 
         // Required fields
         builder.Property(i => i.FirstName)
@@ -22,7 +22,6 @@ public class InstructorConfiguration : IEntityTypeConfiguration<Instructor>
                .HasMaxLength(100);
 
         builder.Property(i => i.UserId)
-               .IsRequired()
                .HasMaxLength(450);
 
         // Relationships
@@ -35,7 +34,7 @@ public class InstructorConfiguration : IEntityTypeConfiguration<Instructor>
         builder.HasOne(i => i.User)
                .WithOne()                           // no collection on ApplicationUser
                .HasForeignKey<Instructor>(i => i.UserId)
-               .OnDelete(DeleteBehavior.Cascade);   // typical: delete instructor if user is deleted
+               .OnDelete(DeleteBehavior.SetNull);   
 
         // Navigation collection
         builder.HasMany(i => i.CourseInstructors)
