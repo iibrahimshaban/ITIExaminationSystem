@@ -1,0 +1,55 @@
+﻿
+@model LoginVm
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="login-container">
+    <div class="header">
+        <div class="icon-wrapper">
+            <svg class="exam-icon" viewBox="0 0 24 24">
+                <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM8 15.5L9.5 14L11 15.5L14.5 12L16 13.5L11 18.5L8 15.5Z" />
+            </svg>
+        </div>
+
+        <h1 class="system-title">Student Exam System</h1>
+        <p class="subtitle">Login to continue your exam</p>
+    </div>
+
+    <form asp-action="Login" asp-controller="Account" method="post">
+        <input type="hidden" asp-for="RedirectUrl" />
+
+        <div class="form-group">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-input" placeholder="Enter your email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-input" placeholder="Enter your password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="form-options">
+            <div class="remember-me">
+                <input asp-for="RememberMe" class="checkbox" />
+                <label asp-for="RememberMe" class="checkbox-label"></label>
+            </div>
+
+            <a asp-action="ForgotPassword" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="login-button">Login</button>
+    </form>
+
+  @*   <p class="footer-text">
+        Don't have an account?
+        <a asp-action="Register" class="signup-link">Sign up</a>
+    </p> *@
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

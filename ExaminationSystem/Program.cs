@@ -1,5 +1,9 @@
 
 
+using ExaminationSystem.Entities;
+using ExaminationSystem.Persistence;
+using System;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -18,8 +22,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapStaticAssets();
 
