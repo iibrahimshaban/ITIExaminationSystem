@@ -1,6 +1,7 @@
 ﻿using ExaminationSystem.Abstractions.Consts;
 using ExaminationSystem.Entities;
 using ExaminationSystem.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,50 +19,77 @@ namespace ExaminationSystem.Controllers
             _signInManager = signInManager;
             _roleManager = roleManager;
         }
-        #region Login 
-        public IActionResult Login(string returnUrl = null)
+        #region Login
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Login(string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            LoginVm loginVm = new()
+
+            return View(new LoginVm
             {
-                RedirectUrl = returnUrl,
-            };
-            return View(loginVm);
+                RedirectUrl = returnUrl
+            });
         }
+
         [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVm model)
         {
-            if (ModelState.IsValid)
-            {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
-                if (result.Succeeded)
-                {
-                    var user = await _userManager.FindByEmailAsync(model.Email);
-                    if (await _userManager.IsInRoleAsync(user, "Admin"))
-                    {
-                        return RedirectToAction("Index", "Home");  //dashboard
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(model.RedirectUrl))
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
-                        else
-                        {
-                            return LocalRedirect(model.RedirectUrl);
-                        }
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Invalid Login.");
-                }
+            if (!ModelState.IsValid)
+                return View(model);
 
+            var result = await _signInManager.PasswordSignInAsync(
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false
+            );
+
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                return View(model);
             }
-            return View(model);
+
+            // 🔹 User authenticated successfully
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                await _signInManager.SignOutAsync();
+                ModelState.AddModelError(string.Empty, "User not found.");
+                return View(model);
+            }
+
+            // 🔹 Get user roles
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // 🔹 Role-based redirection
+            if (roles.Contains("Admin"))
+                return RedirectToAction("Index", "Admin");
+
+            if (roles.Contains("InstructorRole"))
+                return RedirectToAction("Index", "Instructor");
+
+            if (roles.Contains("StudentRole"))
+                return RedirectToAction("Index", "Student");
+
+            // 🔹 Fallback (ReturnUrl)
+            if (!string.IsNullOrEmpty(model.RedirectUrl) &&
+                Url.IsLocalUrl(model.RedirectUrl))
+            {
+                return LocalRedirect(model.RedirectUrl);
+            }
+
+            // 🔹 Absolute fallback
+            return RedirectToAction("Index", "Account");
         }
+
         #endregion
+
 
         #region Logout
         public async Task<IActionResult> Logout()
