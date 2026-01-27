@@ -1,0 +1,95 @@
+﻿<!-- =========================
+     Sidebar (Role-based)
+========================== -->
+<nav class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+        <h5 class="sidebar-title">
+
+            @if (User.IsInRole("Admin"))
+            {
+                <text>Admin Panel</text>
+            }
+            else if (User.IsInRole("InstructorRole"))
+            {
+                <text>Instructor Panel</text>
+            }
+            else if (User.IsInRole("StudentRole"))
+            {
+                <text>Student Panel</text>
+            }
+
+        </h5>
+    </div>
+
+    <ul class="nav flex-column sidebar-nav">
+
+        @* ================= ADMIN ================= *@
+        @if (User.IsInRole("Admin"))
+        {
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Admin"
+                   asp-action="Index">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Account"
+                   asp-action="Register">
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Create User
+                </a>
+            </li>
+        }
+
+        @* ================= INSTRUCTOR ================= *@
+        else if (User.IsInRole("InstructorRole"))
+        {
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Instructor"
+                   asp-action="Index">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Exam"
+                   asp-action="Index">
+                    <i class="bi bi-journal-text me-2"></i>
+                    Manage Exams
+                </a>
+            </li>
+        }
+
+        @* ================= STUDENT ================= *@
+        else if (User.IsInRole("StudentRole"))
+        {
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Student"
+                   asp-action="Index">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    My Dashboard
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Exam"
+                   asp-action="MyExams">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    My Exams
+                </a>
+            </li>
+        }
+
+    </ul>
+</nav>

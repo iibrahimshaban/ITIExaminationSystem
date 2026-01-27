@@ -15,6 +15,7 @@
     <!-- Site & Admin Styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Inst.css" asp-append-version="true" />
 </head>
 <body>
 
@@ -32,12 +33,12 @@
                 <i class="bi bi-list fs-4"></i>
             </button>
 
-            <!-- System Name -->
             <a class="navbar-brand fw-bold"
-               asp-controller="Admin"
+               asp-controller="@ViewBag.HomeController"
                asp-action="Index">
                 Examination System
             </a>
+
 
             <!-- Logout -->
             <div class="ms-auto">
@@ -63,7 +64,7 @@
     <!-- =========================
          Sidebar
     ========================== -->
-    <nav class="admin-sidebar" id="adminSidebar">
+    @* <nav class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-header">
             <h5 class="sidebar-title">Admin Panel</h5>
         </div>
@@ -90,8 +91,8 @@
             </li>
 
         </ul>
-    </nav>
-
+    </nav> *@
+    @await Component.InvokeAsync("Sidebar")
     <!-- =========================
          Main Content
     ========================== -->

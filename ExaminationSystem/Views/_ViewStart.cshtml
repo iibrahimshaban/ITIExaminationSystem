@@ -1,3 +1,8 @@
-﻿@{
+﻿
+@{
     Layout = "_Layout";
+    ViewBag.HomeController =
+        User.IsInRole("Admin") ? "Admin" :
+        User.IsInRole("InstructorRole") ? "Instructor" :
+        "Student";
 }
