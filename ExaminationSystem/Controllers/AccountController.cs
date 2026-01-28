@@ -109,10 +109,8 @@ namespace ExaminationSystem.Controllers
 
         //register will be create by admin 
 
-        #region Register
-
         [HttpGet]
-        //[Authorize(Roles = "Admin")] // Only admin can create users
+       // [Authorize(Roles = "Admin")]
         public IActionResult Register(string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -120,24 +118,23 @@ namespace ExaminationSystem.Controllers
             var model = new RegisterVm
             {
                 RedirectUrl = returnUrl,
-                RoleList = _roleManager.Roles.Select(r => new SelectListItem
-                {
-                    Text = r.Name,
-                    Value = r.Name
-                })
+                RoleList = _userProvisioningService.GetRoles(),
+                BranchList = _userProvisioningService.GetBranches(),
+                TrackList = _userProvisioningService.GetTracks(),
+                CourseList = _userProvisioningService.GetCourses()
             };
 
             return View(model);
         }
 
         [HttpPost]
-     //   [Authorize(Roles = "Admin")]
+      //  [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterVm model)
         {
             if (!ModelState.IsValid)
             {
-                ReloadRoles(model);
+                ReloadLookups(model);
                 return View(model);
             }
 
@@ -151,39 +148,36 @@ namespace ExaminationSystem.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            var createResult = await _userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-            if (!createResult.Succeeded)
+            if (!result.Succeeded)
             {
-                foreach (var error in createResult.Errors)
+                foreach (var error in result.Errors)
                     ModelState.AddModelError(string.Empty, error.Description);
 
-                ReloadRoles(model);
+                ReloadLookups(model);
                 return View(model);
             }
 
-            var roleToAssign = string.IsNullOrWhiteSpace(model.Role)
+            var role = string.IsNullOrWhiteSpace(model.Role)
                 ? DefaultRoles.StudentRole.Name
                 : model.Role;
 
-            await _userManager.AddToRoleAsync(user, roleToAssign);
+            await _userManager.AddToRoleAsync(user, role);
 
-            // 🔥 THIS IS THE KEY LINE
-            await _userProvisioningService.CreateDomainProfileAsync(user, roleToAssign);
+            await _userProvisioningService.CreateDomainProfileAsync(user, role, model);
 
             return RedirectToAction("Index", "Admin");
         }
 
-        private void ReloadRoles(RegisterVm model)
+        private void ReloadLookups(RegisterVm model)
         {
-            model.RoleList = _roleManager.Roles.Select(r => new SelectListItem
-            {
-                Text = r.Name,
-                Value = r.Name
-            });
+            model.RoleList = _userProvisioningService.GetRoles();
+            model.BranchList = _userProvisioningService.GetBranches();
+            model.TrackList = _userProvisioningService.GetTracks();
+            model.CourseList = _userProvisioningService.GetCourses();
         }
 
-        #endregion
 
 
     }

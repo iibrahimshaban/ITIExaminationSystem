@@ -86,13 +86,95 @@
                                 <label asp-for="Role" class="form-label admin-label">
                                     User Role <span class="text-danger">*</span>
                                 </label>
-                                <select asp-for="Role" asp-items="Model.RoleList" class="form-select admin-input">
+                                <select asp-for="Role" asp-items="Model.RoleList" class="form-select admin-input" id="roleSelect">
                                     <option value="">-- Select Role --</option>
                                 </select>
                                 <span asp-validation-for="Role" class="text-danger small"></span>
                                 <div class="form-text">
                                     <i class="bi bi-info-circle me-1"></i>
                                     Assign the appropriate role for this user's permissions
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instructor Section -->
+                        <div id="instructorSection" class="mt-4 pt-3 border-top" style="display: none;">
+                            <h6 class="mb-3 admin-label">
+                                <i class="bi bi-person-workspace me-2"></i>Instructor Details
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="BranchId" class="form-label admin-label">
+                                        Branch <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="BranchId" asp-items="Model.BranchList" class="form-select admin-input" id="branchSelect">
+                                        <option value="">-- Select Branch --</option>
+                                    </select>
+                                    <span asp-validation-for="BranchId" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-12">
+                                    @if (Model.CourseList != null && Model.CourseList.Any())
+                                    {
+                                        <label class="form-label admin-label">
+                                            Assigned Courses <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="border rounded p-3 admin-input" style="max-height: 250px; overflow-y: auto;">
+                                            @foreach (var course in Model.CourseList)
+                                            {
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="SelectedCourseIds" value="@course.Value" id="course_@course.Value"
+                                                           @(Model.SelectedCourseIds != null && Model.SelectedCourseIds.Contains(int.Parse(course.Value)) ? "checked" : "") />
+                                                    <label class="form-check-label" for="course_@course.Value">
+                                                        @course.Text
+                                                    </label>
+                                                </div>
+                                            }
+                                        </div>
+                                        <span asp-validation-for="SelectedCourseIds" class="text-danger small"></span>
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Select one or more courses this instructor will teach
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-info border-0" role="alert">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            No courses available. Please create courses before assigning instructors.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Section -->
+                        <div id="studentSection" class="mt-4 pt-3 border-top" style="display: none;">
+                            <h6 class="mb-3 admin-label">
+                                <i class="bi bi-person-badge me-2"></i>Student Details
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="BranchId" class="form-label admin-label">
+                                        Branch <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="BranchId" asp-items="Model.BranchList" class="form-select admin-input" id="branchSelect">
+                                        <option value="">-- Select Branch --</option>
+                                    </select>
+                                    <span asp-validation-for="BranchId" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label asp-for="TrackId" class="form-label admin-label">
+                                        Track <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="TrackId" asp-items="Model.TrackList" class="form-select admin-input" id="trackSelect" disabled>
+                                        <option value="">-- Select Track --</option>
+                                    </select>
+                                    <span asp-validation-for="TrackId" class="text-danger small"></span>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Select a branch first to enable track selection
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -157,4 +239,67 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Role-based sections toggle script
+        (function() {
+            'use strict';
+
+            console.log('Role toggle script loaded'); // Debug
+
+            const roleSelect = document.getElementById('roleSelect');
+            const instructorSection = document.getElementById('instructorSection');
+            const studentSection = document.getElementById('studentSection');
+            const branchSelect = document.getElementById('branchSelect');
+            const trackSelect = document.getElementById('trackSelect');
+
+            if (!roleSelect || !instructorSection || !studentSection) {
+                console.error('Required elements not found!');
+                return;
+            }
+
+            // Function to toggle sections based on selected role
+            function toggleRoleSections() {
+                const selectedRole = roleSelect.value;
+                console.log('Selected role:', selectedRole); // Debug
+
+                // Hide all sections by default
+                instructorSection.style.display = 'none';
+                studentSection.style.display = 'none';
+
+                // Show appropriate section based on role
+                if (selectedRole === 'InstructorRole') {
+                    instructorSection.style.display = 'block';
+                    console.log('Showing instructor section');
+                } else if (selectedRole === 'StudentRole') {
+                    studentSection.style.display = 'block';
+                    console.log('Showing student section');
+                }
+            }
+
+            // Function to enable/disable track dropdown based on branch selection
+            function toggleTrackDropdown() {
+                if (branchSelect && trackSelect) {
+                    if (branchSelect.value) {
+                        trackSelect.disabled = false;
+                    } else {
+                        trackSelect.disabled = true;
+                        trackSelect.value = '';
+                    }
+                }
+            }
+
+            // Event listeners
+            roleSelect.addEventListener('change', toggleRoleSections);
+            if (branchSelect) {
+                branchSelect.addEventListener('change', toggleTrackDropdown);
+            }
+
+            // Initialize on page load (important for ModelState failures)
+            toggleRoleSections();
+            toggleTrackDropdown();
+
+            console.log('Role toggle initialized');
+        })();
+    </script>
 }
