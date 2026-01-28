@@ -1,11 +1,15 @@
 using ExaminationSystem.Entities;
 using ExaminationSystem.Persistence;
+using ExaminationSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Services
 builder.Services.AddControllersWithViews();
 builder.Services.AddDependacies(builder.Configuration);
+
+// new clone mb
+builder.Services.AddScoped<IStudentService, StudentService>();
 
 var app = builder.Build();
 

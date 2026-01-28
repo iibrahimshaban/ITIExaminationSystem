@@ -1,0 +1,13 @@
+﻿@model ExaminationSystem.Entities.Student
+
+<h2>Welcome, @Model.FirstName 👋</h2>
+
+<p>
+    Track: @Model.Track?.Title <br />
+    Enrollment Date: @Model.EnrollmentDate
+</p>
+
+<hr />
+
+<a asp-action="Courses">My Courses</a> |
+<a asp-action="Exams">Available Exams</a>
