@@ -1,9 +1,4 @@
-﻿using ExaminationSystem.Entities;
-using ExaminationSystem.Persistence;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-
-namespace ExaminationSystem;
+﻿namespace ExaminationSystem;
 
 public static class DependancyInjection
 {
@@ -11,7 +6,8 @@ public static class DependancyInjection
     {
         services
             .AddDbContextConfiguration(configuration)
-            .AddIdentityConfiguration();
+            .AddIdentityConfiguration()
+            .AddServiceRegistration();
         return services;
     }
 
@@ -22,6 +18,13 @@ public static class DependancyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
+
+        return services;
+    }
+
+    private static IServiceCollection AddServiceRegistration(this IServiceCollection services)
+    {
+        services.AddScoped<IInstructorServcie, InstructorService>();
 
         return services;
     }

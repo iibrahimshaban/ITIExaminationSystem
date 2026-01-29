@@ -7,7 +7,6 @@ public class StudentAnswer
     public int QuestionId { get; set; }
     public int? SelectedChoiceId { get; set; }      // for MCQ
     public bool? TFAnswer { get; set; }             // for T/F
-    public DateTime? AnsweredAt { get; set; }
     public int Point { get; set; } 
 
     public Submission Submission { get; set; } = default!;

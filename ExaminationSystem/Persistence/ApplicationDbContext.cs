@@ -1,4 +1,5 @@
 ﻿using ExaminationSystem.Entities;
+using ExaminationSystem.Persistence.SpDto;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Reflection;
 
@@ -10,6 +11,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.Entity<CouresExamForInstructor>(e => { e.HasNoKey().ToView(null); });
 
         base.OnModelCreating(modelBuilder);
     }
@@ -33,4 +36,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     // 3. Exam Execution / Submission related
     public DbSet<Submission> Submissions { get; set; }        // Exam attempts
     public DbSet<StudentAnswer> StudentAnswers { get; set; }
-}
+
+    // for Sp tables
+    public DbSet<CouresExamForInstructor> CouresExamForInstructors { get; set; }
+    }

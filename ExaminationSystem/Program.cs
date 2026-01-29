@@ -1,3 +1,4 @@
+using ExaminationSystem.Persistence;
 
 
 var builder = WebApplication.CreateBuilder(args);

@@ -542,9 +542,6 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("AnsweredAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("ChoiceId")
                         .HasColumnType("int");
 
