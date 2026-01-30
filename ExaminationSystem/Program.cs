@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Services
 builder.Services.AddControllersWithViews();
 builder.Services.AddDependacies(builder.Configuration);
-builder.Services.AddScoped<IInstructorService, InstructorService>();
+builder.Services.AddScoped<IInstructorService, ExaminationSystem.Services.Instructor.InstructorService>();
 builder.Services.AddScoped<IUserProvisioningService, UserProvisioningService>();
 builder.Services.AddScoped<IInstructorExamService, InstructorExamService>();
 var app = builder.Build();
