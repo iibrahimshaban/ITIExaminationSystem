@@ -79,3 +79,9 @@ a:has(.course-card) {
         min-height: 3rem;
     }
 }
+
+/* Instructor specific heading tone */
+.course-details-title {
+    color: #1B3C53;
+    font-weight: 700;
+}
