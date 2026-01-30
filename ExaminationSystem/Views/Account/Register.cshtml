@@ -96,89 +96,88 @@
                                 </div>
                             </div>
                         </div>
-
+                       
+                        <!-- Instructor Section -->
                         <!-- Instructor Section -->
                         <div id="instructorSection" class="mt-4 pt-3 border-top" style="display: none;">
                             <h6 class="mb-3 admin-label">
                                 <i class="bi bi-person-workspace me-2"></i>Instructor Details
                             </h6>
+
                             <div class="row g-3">
+
                                 <div class="col-md-6">
                                     <label asp-for="BranchId" class="form-label admin-label">
                                         Branch <span class="text-danger">*</span>
                                     </label>
-                                    <select asp-for="BranchId" asp-items="Model.BranchList" class="form-select admin-input" id="branchSelect">
+                                    <select asp-for="BranchId"
+                                            asp-items="Model.BranchList"
+                                            class="form-select admin-input"
+                                            id="instructorBranchSelect">
                                         <option value="">-- Select Branch --</option>
                                     </select>
                                     <span asp-validation-for="BranchId" class="text-danger small"></span>
                                 </div>
+
                                 <div class="col-md-12">
-                                    @if (Model.CourseList != null && Model.CourseList.Any())
-                                    {
-                                        <label class="form-label admin-label">
-                                            Assigned Courses <span class="text-danger">*</span>
-                                        </label>
-                                        <div class="border rounded p-3 admin-input" style="max-height: 250px; overflow-y: auto;">
-                                            @foreach (var course in Model.CourseList)
-                                            {
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" name="SelectedCourseIds" value="@course.Value" id="course_@course.Value"
-                                                           @(Model.SelectedCourseIds != null && Model.SelectedCourseIds.Contains(int.Parse(course.Value)) ? "checked" : "") />
-                                                    <label class="form-check-label" for="course_@course.Value">
-                                                        @course.Text
-                                                    </label>
-                                                </div>
-                                            }
-                                        </div>
-                                        <span asp-validation-for="SelectedCourseIds" class="text-danger small"></span>
-                                        <div class="form-text">
-                                            <i class="bi bi-info-circle me-1"></i>
-                                            Select one or more courses this instructor will teach
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="alert alert-info border-0" role="alert">
-                                            <i class="bi bi-info-circle me-2"></i>
-                                            No courses available. Please create courses before assigning instructors.
-                                        </div>
-                                    }
+                                    <label class="form-label admin-label">
+                                        Assigned Courses <span class="text-danger">*</span>
+                                    </label>
+
+                                    <!-- ✅ THIS WAS MISSING -->
+                                    <div id="coursesContainer"
+                                         class="border rounded p-3 admin-input"
+                                         style="max-height: 250px; overflow-y: auto;">
+                                        <span class="text-muted">
+                                            Select a branch to load courses
+                                        </span>
+                                    </div>
+
+                                    <span asp-validation-for="SelectedCourseIds" class="text-danger small"></span>
                                 </div>
+
                             </div>
                         </div>
+
 
                         <!-- Student Section -->
                         <div id="studentSection" class="mt-4 pt-3 border-top" style="display: none;">
                             <h6 class="mb-3 admin-label">
                                 <i class="bi bi-person-badge me-2"></i>Student Details
                             </h6>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="BranchId" class="form-label admin-label">
-                                        Branch <span class="text-danger">*</span>
-                                    </label>
-                                    <select asp-for="BranchId" asp-items="Model.BranchList" class="form-select admin-input" id="branchSelect">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="BranchId" class="form-label admin-label">
+                                    Branch <span class="text-danger">*</span>
+                                </label>
+                                    <select asp-for="BranchId"
+                                            asp-items="Model.BranchList"
+                                            class="form-select admin-input"
+                                            id="studentBranchSelect">
                                         <option value="">-- Select Branch --</option>
                                     </select>
-                                    <span asp-validation-for="BranchId" class="text-danger small"></span>
-                                </div>
+                                <span asp-validation-for="BranchId" class="text-danger small"></span>
+                            </div>
 
-                                <div class="col-md-6">
-                                    <label asp-for="TrackId" class="form-label admin-label">
-                                        Track <span class="text-danger">*</span>
-                                    </label>
-                                    <select asp-for="TrackId" asp-items="Model.TrackList" class="form-select admin-input" id="trackSelect" disabled>
+                            <div class="col-md-6">
+                                <label asp-for="TrackId" class="form-label admin-label">
+                                    Track <span class="text-danger">*</span>
+                                </label>
+                                    <select asp-for="TrackId"
+                                            asp-items="Model.TrackList"
+                                            class="form-select admin-input"
+                                            id="studentTrackSelect"
+                                            disabled>
                                         <option value="">-- Select Track --</option>
                                     </select>
-                                    <span asp-validation-for="TrackId" class="text-danger small"></span>
-                                    <div class="form-text">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Select a branch first to enable track selection
-                                    </div>
+                                <span asp-validation-for="TrackId" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Select a branch first to enable track selection
                                 </div>
                             </div>
                         </div>
-
+                        </div>
                         <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                             <a asp-action="Index" asp-controller="Admin" class="btn btn-light px-4">
                                 Cancel
@@ -241,65 +240,96 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // Role-based sections toggle script
-        (function() {
-            'use strict';
-
-            console.log('Role toggle script loaded'); // Debug
+        (function () {
 
             const roleSelect = document.getElementById('roleSelect');
+
             const instructorSection = document.getElementById('instructorSection');
             const studentSection = document.getElementById('studentSection');
-            const branchSelect = document.getElementById('branchSelect');
-            const trackSelect = document.getElementById('trackSelect');
 
-            if (!roleSelect || !instructorSection || !studentSection) {
-                console.error('Required elements not found!');
-                return;
-            }
+            const studentBranch = document.getElementById('studentBranchSelect');
+            const studentTrack = document.getElementById('studentTrackSelect');
 
-            // Function to toggle sections based on selected role
-            function toggleRoleSections() {
-                const selectedRole = roleSelect.value;
-                console.log('Selected role:', selectedRole); // Debug
+            const instructorBranch = document.getElementById('instructorBranchSelect');
+            const coursesContainer = document.getElementById('coursesContainer');
 
-                // Hide all sections by default
+            function toggleRole() {
                 instructorSection.style.display = 'none';
                 studentSection.style.display = 'none';
 
-                // Show appropriate section based on role
-                if (selectedRole === 'InstructorRole') {
+                if (roleSelect.value === 'InstructorRole') {
                     instructorSection.style.display = 'block';
-                    console.log('Showing instructor section');
-                } else if (selectedRole === 'StudentRole') {
+                }
+
+                if (roleSelect.value === 'StudentRole') {
                     studentSection.style.display = 'block';
-                    console.log('Showing student section');
                 }
             }
 
-            // Function to enable/disable track dropdown based on branch selection
-            function toggleTrackDropdown() {
-                if (branchSelect && trackSelect) {
-                    if (branchSelect.value) {
-                        trackSelect.disabled = false;
-                    } else {
-                        trackSelect.disabled = true;
-                        trackSelect.value = '';
+            roleSelect.addEventListener('change', toggleRole);
+            toggleRole();
+
+            // STUDENT → TRACKS
+            studentBranch?.addEventListener('change', () => {
+                studentTrack.innerHTML = '<option value="">-- Select Track --</option>';
+                studentTrack.disabled = true;
+
+                if (!studentBranch.value) return;
+
+                fetch(`/api/lookups/tracks-by-branch/${studentBranch.value}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        data.forEach(t => {
+                            studentTrack.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+                        });
+                        studentTrack.disabled = false;
+                    });
+            });
+
+            // INSTRUCTOR → COURSES
+                   // INSTRUCTOR → COURSES
+        instructorBranch?.addEventListener('change', () => {
+
+            coursesContainer.innerHTML =
+                '<span class="text-muted">Loading courses...</span>';
+
+            if (!instructorBranch.value) {
+                coursesContainer.innerHTML =
+                    '<span class="text-muted">Select a branch to load courses</span>';
+                return;
+            }
+
+            fetch(`/api/lookups/courses-by-branch/${instructorBranch.value}`)
+                .then(r => r.json())
+                .then(data => {
+
+                    coursesContainer.innerHTML = '';
+
+                    if (!data.length) {
+                        coursesContainer.innerHTML =
+                            '<span class="text-muted">No courses available for this branch</span>';
+                        return;
                     }
-                }
-            }
 
-            // Event listeners
-            roleSelect.addEventListener('change', toggleRoleSections);
-            if (branchSelect) {
-                branchSelect.addEventListener('change', toggleTrackDropdown);
-            }
+                    data.forEach(c => {
+                        coursesContainer.innerHTML += `
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="SelectedCourseIds"
+                                       value="${c.id}"
+                                       id="course_${c.id}">
+                                <label class="form-check-label" for="course_${c.id}">
+                                    ${c.name}
+                                </label>
+                            </div>`;
+                    });
+                });
+        });
 
-            // Initialize on page load (important for ModelState failures)
-            toggleRoleSections();
-            toggleTrackDropdown();
 
-            console.log('Role toggle initialized');
         })();
     </script>
+
+
 }

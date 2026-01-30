@@ -1,0 +1,174 @@
+﻿
+
+
+@model List<ExaminationSystem.ViewModel.InstructorAvailableExamVm>
+
+@{
+    ViewData["Title"] = "Available Exams";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-file-earmark-text me-2" style="color: #1B3C53;"></i>
+                        Available Exams
+                    </h2>
+                    <p class="text-muted">View published exams for your courses</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary fs-6 px-3 py-2">
+                        <i class="bi bi-card-checklist me-1"></i>
+                        @Model.Count Total Exam(s)
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col-12">
+                <div class="admin-card text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 4rem; color: #D2C1B6;"></i>
+                    <h4 class="mt-3 mb-2">No Exams Available</h4>
+                    <p class="text-muted">There are no published exams for your courses at this time.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Exams Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="admin-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background-color: #1B3C53; color: white;">
+                                <tr>
+                                    <th scope="col">Course Code</th>
+                                    <th scope="col">Course Title</th>
+                                    <th scope="col">Exam Title</th>
+                                    <th scope="col" class="text-center">Duration</th>
+                                    <th scope="col" class="text-center">Total Questions</th>
+                                    <th scope="col" class="text-center">MCQ</th>
+                                    <th scope="col" class="text-center">True/False</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var exam in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-secondary">@exam.CourseCode</span>
+                                        </td>
+                                        <td>
+                                            <strong>@exam.CourseTitle</strong>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-file-text me-2" style="color: #456882;"></i>
+                                            @exam.ExamTitle
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge" style="background-color: #D2C1B6; color: #1B3C53;">
+                                                <i class="bi bi-clock me-1"></i>
+                                                @exam.DurationInMinutes min
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">@exam.TotalQuestions</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info text-dark">@exam.MCQ_Count</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">@exam.TF_Count</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mt-4">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center p-3" style="background-color: #F9F3EF; border-left: 4px solid #1B3C53;">
+                    <h3 class="mb-1" style="color: #1B3C53;">@Model.Select(e => e.CourseCode).Distinct().Count()</h3>
+                    <p class="text-muted mb-0 small">Active Courses</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center p-3" style="background-color: #F9F3EF; border-left: 4px solid #456882;">
+                    <h3 class="mb-1" style="color: #456882;">@Model.Count</h3>
+                    <p class="text-muted mb-0 small">Published Exams</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center p-3" style="background-color: #F9F3EF; border-left: 4px solid #D2C1B6;">
+                    <h3 class="mb-1" style="color: #1B3C53;">@Model.Sum(e => e.TotalQuestions)</h3>
+                    <p class="text-muted mb-0 small">Total Questions</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center p-3" style="background-color: #F9F3EF; border-left: 4px solid #1B3C53;">
+                    <h3 class="mb-1" style="color: #1B3C53;">@(Model.Any() ? Model.Average(e => e.DurationInMinutes).ToString("0") : "0") min</h3>
+                    <p class="text-muted mb-0 small">Avg Duration</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .admin-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .table thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .table tbody tr:hover {
+        background-color: #F9F3EF;
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.4rem 0.8rem;
+    }
+</style>
+

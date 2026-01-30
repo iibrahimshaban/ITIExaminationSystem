@@ -108,7 +108,8 @@ namespace ExaminationSystem.Controllers
         #endregion
 
         //register will be create by admin 
-
+        #region Register
+   
         [HttpGet]
        // [Authorize(Roles = "Admin")]
         public IActionResult Register(string? returnUrl = null)
@@ -179,6 +180,6 @@ namespace ExaminationSystem.Controllers
         }
 
 
-
+        #endregion
     }
 }

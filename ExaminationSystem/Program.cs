@@ -12,6 +12,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDependacies(builder.Configuration);
 builder.Services.AddScoped<IInstructorService, InstructorService>();
 builder.Services.AddScoped<IUserProvisioningService, UserProvisioningService>();
+builder.Services.AddScoped<IInstructorExamService, InstructorExamService>();
 var app = builder.Build();
 
 #region Apply Migrations

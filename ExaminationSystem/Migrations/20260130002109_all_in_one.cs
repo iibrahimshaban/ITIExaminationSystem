@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace ExaminationSystem.Persistence.Migrations
+namespace ExaminationSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDBSchema : Migration
+    public partial class all_in_one : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,6 +34,8 @@ namespace ExaminationSystem.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -208,7 +210,7 @@ namespace ExaminationSystem.Persistence.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CourseId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Order = table.Column<int>(type: "int", nullable: false),
                     IsRequired = table.Column<bool>(type: "bit", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
@@ -221,7 +223,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.CourseId,
                         principalTable: "Courses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -234,8 +236,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ManagerId = table.Column<int>(type: "int", nullable: false),
-                    EstablishDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ManagerId = table.Column<int>(type: "int", nullable: true),
+                    EstablishDate = table.Column<DateOnly>(type: "date", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -251,7 +253,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BranchId = table.Column<int>(type: "int", nullable: false),
                     TrackId = table.Column<int>(type: "int", nullable: false),
-                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreationDate = table.Column<DateOnly>(type: "date", nullable: true),
                     IsCurrentlyOffered = table.Column<bool>(type: "bit", nullable: false),
                     NumberOfStudents = table.Column<int>(type: "int", nullable: false)
                 },
@@ -263,13 +265,13 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.BranchId,
                         principalTable: "Branches",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_BranchTracks_Tracks_TrackId",
                         column: x => x.TrackId,
                         principalTable: "Tracks",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -282,12 +284,12 @@ namespace ExaminationSystem.Persistence.Migrations
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     BranchId = table.Column<int>(type: "int", nullable: false),
                     JobTitles = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Salary = table.Column<decimal>(type: "decimal(4,2)", precision: 4, scale: 2, nullable: true),
+                    Salary = table.Column<decimal>(type: "decimal(8,2)", precision: 8, scale: 2, nullable: true),
                     Gender = table.Column<bool>(type: "bit", nullable: true),
-                    HireDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    HireDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
                     Qualification = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -297,7 +299,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Instructors_Branches_BranchId",
                         column: x => x.BranchId,
@@ -317,11 +319,11 @@ namespace ExaminationSystem.Persistence.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Gender = table.Column<bool>(type: "bit", nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
                     EnrollmentDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GraduationDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -331,7 +333,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Students_Branches_BranchId",
                         column: x => x.BranchId,
@@ -355,7 +357,7 @@ namespace ExaminationSystem.Persistence.Migrations
                     CourseId = table.Column<int>(type: "int", nullable: false),
                     InstructorId = table.Column<int>(type: "int", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AssignedAt = table.Column<DateOnly>(type: "date", nullable: false),
                     HadLeft = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -366,13 +368,13 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.CourseId,
                         principalTable: "Courses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_CourseInstructors_Instructors_InstructorId",
                         column: x => x.InstructorId,
                         principalTable: "Instructors",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -381,7 +383,7 @@ namespace ExaminationSystem.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CourseId = table.Column<int>(type: "int", nullable: false),
+                    CourseId = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     DurationInMinutes = table.Column<int>(type: "int", nullable: false),
                     TotalPoints = table.Column<int>(type: "int", nullable: false),
@@ -398,7 +400,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.CourseId,
                         principalTable: "Courses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Exams_Instructors_CreatedBy",
                         column: x => x.CreatedBy,
@@ -415,11 +417,12 @@ namespace ExaminationSystem.Persistence.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     CourseId = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     ExamGrade = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: true),
                     FinalGrade = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: true),
-                    CompletionDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CourseworkGrade = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: true),
+                    CompletionDate = table.Column<DateOnly>(type: "date", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Certificated = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
@@ -462,7 +465,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.ExamId,
                         principalTable: "Exams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -472,14 +475,12 @@ namespace ExaminationSystem.Persistence.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentId = table.Column<int>(type: "int", nullable: false),
-                    ExamId = table.Column<int>(type: "int", nullable: false),
+                    ExamId = table.Column<int>(type: "int", nullable: true),
                     IsCorrective = table.Column<bool>(type: "bit", nullable: false),
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DurationTakenSeconds = table.Column<int>(type: "int", nullable: true),
-                    Grade = table.Column<decimal>(type: "decimal(4,2)", precision: 4, scale: 2, nullable: true),
-                    AnsweredAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Grade = table.Column<decimal>(type: "decimal(4,2)", precision: 4, scale: 2, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -489,13 +490,13 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.ExamId,
                         principalTable: "Exams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Submissions_Students_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Students",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -518,7 +519,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.QuestionId,
                         principalTable: "Questions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -560,7 +561,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         column: x => x.SubmissionId,
                         principalTable: "Submissions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
@@ -575,8 +576,8 @@ namespace ExaminationSystem.Persistence.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "019ba93d-a01b-71bf-af81-509c73d0c238", 0, "019ba93d-a01b-71bf-af81-509ee452b414", "Admin@ITIExaminationSystem.com", true, false, null, "ADMIN@ITIEXAMINATIONSYSTEM.COM", "IIBRAHIM", "AQAAAAIAAYagAAAAEFO/MmzuJA4psaOEGHbGZTnZSfWQG3DWN7ZSg4SzyXDhfwJCIHvhU8sEQ3mGQcFkBQ==", null, false, "019ba93da01b71bfaf81509da3d5e4d3", false, "iibrahim" });
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "Name", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "019ba93d-a01b-71bf-af81-509c73d0c238", 0, "019ba93d-a01b-71bf-af81-509ee452b414", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin@ITIExaminationSystem.com", true, false, null, null, "ADMIN@ITIEXAMINATIONSYSTEM.COM", "IIBRAHIM", "AQAAAAIAAYagAAAAEFO/MmzuJA4psaOEGHbGZTnZSfWQG3DWN7ZSg4SzyXDhfwJCIHvhU8sEQ3mGQcFkBQ==", null, false, "019ba93da01b71bfaf81509da3d5e4d3", false, "iibrahim" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -687,7 +688,8 @@ namespace ExaminationSystem.Persistence.Migrations
                 name: "IX_Instructors_UserId",
                 table: "Instructors",
                 column: "UserId",
-                unique: true);
+                unique: true,
+                filter: "[UserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Questions_ExamId",
@@ -749,7 +751,8 @@ namespace ExaminationSystem.Persistence.Migrations
                 name: "IX_Students_UserId",
                 table: "Students",
                 column: "UserId",
-                unique: true);
+                unique: true,
+                filter: "[UserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Submissions_ExamId",
@@ -772,7 +775,7 @@ namespace ExaminationSystem.Persistence.Migrations
                 column: "ManagerId",
                 principalTable: "Instructors",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+                onDelete: ReferentialAction.SetNull);
         }
 
         /// <inheritdoc />

@@ -9,18 +9,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ExaminationSystem.Persistence.Migrations
+namespace ExaminationSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260114072837_ModifyStudentTable")]
-    partial class ModifyStudentTable
+    [Migration("20260130002109_all_in_one")]
+    partial class all_in_one
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -99,6 +99,9 @@ namespace ExaminationSystem.Persistence.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -111,6 +114,9 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -157,6 +163,7 @@ namespace ExaminationSystem.Persistence.Migrations
                             Id = "019ba93d-a01b-71bf-af81-509c73d0c238",
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "019ba93d-a01b-71bf-af81-509ee452b414",
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "Admin@ITIExaminationSystem.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
@@ -317,8 +324,8 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("AssignedAt")
+                        .HasColumnType("date");
 
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
@@ -592,11 +599,15 @@ namespace ExaminationSystem.Persistence.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("CompletionDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("CompletionDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("CourseworkGrade")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<decimal?>("ExamGrade")
                         .HasPrecision(5, 2)
@@ -609,8 +620,8 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .HasMaxLength(50)
@@ -642,14 +653,8 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("AnsweredAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("DurationTakenSeconds")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("datetime2");
 
                     b.Property<int?>("ExamId")
                         .HasColumnType("int");

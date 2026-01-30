@@ -29,7 +29,7 @@
             @foreach (var course in Model)
             {
                 <div class="col-12 col-md-6 col-lg-4">
-                    <a asp-controller="Course" asp-action="Details" asp-route-id="@course.CourseId" class="text-decoration-none">
+                    <a asp-controller="instructor" asp-action="CourseDetails" asp-route-id="@course.CourseId" class="text-decoration-none">
                         <div class="card h-100 shadow-sm border-0 course-card">
                             <div class="card-header bg-white border-bottom">
                                 <h5 class="card-title mb-1 fw-bold">@course.Title</h5>

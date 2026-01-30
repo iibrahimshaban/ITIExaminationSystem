@@ -70,7 +70,9 @@ namespace ExaminationSystem.Services.Admin
                         UserId = user.Id,
                         FirstName = user.Name ?? "instructor",
                         HireDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                        BranchId = model.BranchId.Value
+                        BranchId = model.BranchId.Value,
+                       
+                        
                     };
 
                     _context.Instructors.Add(instructor);
