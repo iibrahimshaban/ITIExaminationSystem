@@ -1,0 +1,236 @@
+﻿
+@model InstructorCourseDetailsVm
+
+@{
+    ViewData["Title"] = Model.CourseTitle;
+    var hasCourseCode = !string.IsNullOrWhiteSpace(Model.CourseCode);
+    var hasDescription = !string.IsNullOrWhiteSpace(Model.Description);
+    var hasTrack = Model.TrackId.HasValue && !string.IsNullOrWhiteSpace(Model.TrackName);
+    var hasDuration = Model.DurationDays.HasValue && Model.DurationDays.Value > 0;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item">
+                    <a asp-action="Index" asp-controller="Instructor">
+                        <i class="bi bi-house-door me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a asp-action="Index" asp-controller="Instructor">My Courses</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Course Details</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center gap-2">
+            <h2 class="mb-0 course-details-title">@Model.CourseTitle</h2>
+            @if (hasCourseCode)
+            {
+                <span class="badge badge-brand rounded-pill px-3 py-2">
+                    @Model.CourseCode
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Course Overview Card -->
+<div class="card section-card mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="mb-0">
+            <i class="bi bi-book text-primary me-2"></i>Course Overview
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <!-- Description -->
+            <div class="col-12">
+                <h6 class="text-muted mb-2">
+                    <i class="bi bi-card-text me-2"></i>Description
+                </h6>
+                @if (hasDescription)
+                {
+                    <p class="mb-0">@Model.Description</p>
+                }
+                else
+                {
+                    <p class="text-muted fst-italic mb-0">No description available</p>
+                }
+            </div>
+
+            <!-- Course Details Grid -->
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-primary bg-opacity-10 rounded p-3 me-3">
+                        <i class="bi bi-clock text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Duration</small>
+                        <strong>
+                            @if (hasDuration)
+                            {
+                                @Model.DurationDays <text>Days</text>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not specified</span>
+                            }
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-primary bg-opacity-10 rounded p-3 me-3">
+                        <i class="bi bi-diagram-3 text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Track</small>
+                        <strong>
+                            @if (hasTrack)
+                            {
+                                @Model.TrackName
+                            }
+                            else
+                            {
+                                <span class="text-muted">No track assigned</span>
+                            }
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-primary bg-opacity-10 rounded p-3 me-3">
+                        <i class="bi bi-building text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Branch</small>
+                        <strong>@Model.BranchName</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <!-- Students Count -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                    <i class="bi bi-people-fill text-primary fs-1"></i>
+                </div>
+                <h3 class="mb-2 fw-bold">@Model.StudentsCount</h3>
+                <p class="text-muted mb-0">
+                    @if (Model.StudentsCount == 1)
+                    {
+                        <text>Student Enrolled</text>
+                    }
+                    else
+                    {
+                        <text>Students Enrolled</text>
+                    }
+                </p>
+                @if (hasTrack)
+                {
+                    <small class="text-muted d-block mt-1">(@Model.TrackName - @Model.BranchName)</small>
+                }
+                else
+                {
+                    <small class="text-muted d-block mt-1">(@Model.BranchName)</small>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Placeholder for future stats - Exams -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 bg-light">
+            <div class="card-body text-center">
+                <div class="icon-wrapper bg-secondary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                    <i class="bi bi-file-earmark-text text-secondary fs-1"></i>
+                </div>
+                <h3 class="mb-2 fw-bold text-muted">--</h3>
+                <p class="text-muted mb-0">Exams</p>
+                <small class="text-muted d-block mt-1">Coming soon</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Placeholder for future stats - Topics -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 bg-light">
+            <div class="card-body text-center">
+                <div class="icon-wrapper bg-secondary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                    <i class="bi bi-layers text-secondary fs-1"></i>
+                </div>
+                <h3 class="mb-2 fw-bold text-muted">--</h3>
+                <p class="text-muted mb-0">Topics</p>
+                <small class="text-muted d-block mt-1">Coming soon</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Topics Section (Future Enhancement) -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul text-primary me-2"></i>Course Topics
+        </h5>
+    </div>
+    <div class="card-body">
+        @if (Model.Topics.Any())
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var topic in Model.Topics)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-semibold">@topic.Order.</span>
+                            @topic.Title
+                        </div>
+
+                        @if (topic.IsRequired)
+                        {
+                            <span class="badge bg-primary bg-opacity-10 text-primary">
+                                Required
+                            </span>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="alert alert-info mb-0" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                No topics have been added to this course yet.
+            </div>
+        }
+
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="d-flex gap-2 mb-4">
+    <a asp-action="index" asp-controller="Instructor" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left me-2"></i>Back to My Courses
+    </a>
+    <button type="button" class="btn btn-secondary" disabled>
+        <i class="bi bi-file-earmark-text me-2"></i>View Exams
+        <small class="ms-1">(Coming Soon)</small>
+    </button>
+</div>
+

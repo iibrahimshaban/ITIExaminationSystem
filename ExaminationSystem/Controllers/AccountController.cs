@@ -109,8 +109,10 @@ namespace ExaminationSystem.Controllers
 
         //register will be create by admin 
 
+        #region Register
+
         [HttpGet]
-       // [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         public IActionResult Register(string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -128,7 +130,7 @@ namespace ExaminationSystem.Controllers
         }
 
         [HttpPost]
-      //  [Authorize(Roles = "Admin")]
+        //  [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterVm model)
         {
@@ -178,6 +180,8 @@ namespace ExaminationSystem.Controllers
             model.CourseList = _userProvisioningService.GetCourses();
         }
 
+
+        #endregion
 
 
     }
