@@ -7,7 +7,7 @@ public class CouresExamForInstructor
 
     public string CourseCode { get; set; } = string.Empty;
     public string CourseTitle { get; set; } = string.Empty;
-
+    public int ExamId { get; set; }
     public string ExamTitle { get; set; } = string.Empty;
     public int DurationInMinutes { get; set; }
 
