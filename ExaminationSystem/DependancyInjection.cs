@@ -33,7 +33,7 @@ public static class DependancyInjection
         services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
-
+    
         services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequiredLength = 8;
