@@ -320,3 +320,50 @@ span.text-danger {
         font-size: 1.6rem;
     }
 }
+
+/* ===============================
+   Shared Utilities (Admin + Instructor)
+================================ */
+
+/* Icon wrapper used in cards */
+.icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    min-height: 56px;
+}
+
+/* Section card standard */
+.section-card {
+    border-radius: 12px;
+    background-color: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+    .section-card:hover {
+        box-shadow: 0 8px 20px rgba(27, 60, 83, 0.12);
+    }
+
+    /* Section card header */
+    .section-card .card-header {
+        background-color: #FAFAFA;
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+/* Brand badge */
+.badge-brand {
+    background-color: var(--admin-primary);
+    color: #fff;
+    font-weight: 500;
+}
+
+/* Breadcrumb styling */
+.breadcrumb a {
+    color: var(--admin-secondary);
+    text-decoration: none;
+}
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }

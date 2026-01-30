@@ -1,12 +1,21 @@
+
+using ExaminationSystem.Persistence;
+using ExaminationSystem.Abstractions.Interfaces;
+using ExaminationSystem.Abstractions.Interfaces.Instructor;
 using ExaminationSystem.Entities;
 using ExaminationSystem.Persistence;
+using ExaminationSystem.Services.Admin;
+using ExaminationSystem.Services.Instructor;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Services
 builder.Services.AddControllersWithViews();
 builder.Services.AddDependacies(builder.Configuration);
-
+builder.Services.AddScoped<IInstructorService, ExaminationSystem.Services.Instructor.InstructorService>();
+builder.Services.AddScoped<IUserProvisioningService, UserProvisioningService>();
+builder.Services.AddScoped<IInstructorExamService, InstructorExamService>();
 var app = builder.Build();
 
 #region Apply Migrations
@@ -28,7 +37,7 @@ catch (Exception ex)
 // Middleware
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Admin/Error");
     app.UseHsts();
 }
 
@@ -42,6 +51,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Admin}/{action=Index}/{id?}");
 
 app.Run();
