@@ -7,15 +7,15 @@
 
             @if (User.IsInRole("Admin"))
             {
-                <text>Admin Panel</text>
+                <p>Admin Panel</p>
             }
             else if (User.IsInRole("InstructorRole"))
             {
-                <text>Instructor Panel</text>
+                <p>Instructor Panel</p>
             }
             else if (User.IsInRole("StudentRole"))
             {
-                <text>Student Panel</text>
+                <p>Student Panel</p>
             }
 
         </h5>
@@ -61,8 +61,8 @@
 
             <li class="nav-item">
                 <a class="nav-link"
-                   asp-controller="Exam"
-                   asp-action="Index">
+                   asp-controller="Instructor"
+                   asp-action="Exams">
                     <i class="bi bi-journal-text me-2"></i>
                     Manage Exams
                 </a>

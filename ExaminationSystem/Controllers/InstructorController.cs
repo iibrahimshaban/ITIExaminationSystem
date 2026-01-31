@@ -67,5 +67,52 @@ namespace ExaminationSystem.Controllers
 
             return View(availableExams);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ExamDetails( int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var exam = await _instructorExamService.GetExamDetailsAsync(userId, id);
+
+            if (exam == null)
+                return NotFound();
+
+            return View(exam);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> AssignExam(InstructorExamDetailsVm model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("ExamDetails", model);
+            }
+
+            var result = await _instructorExamService.GenerateAndAssignRandomExamAsync(
+                model.ExamId,
+                model.NumberOfMCQ,
+                model.NumberOfTrueFalse,
+                model.MaxStudents);
+
+            if (result.IsFailur)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Unable to assign exam. Please check question counts."
+                );
+
+                // 👇 stay on same page, same exam
+                return View("ExamDetails", model);
+            }
+
+            return RedirectToAction("Exams");
+        }
+
+
     }
 }
