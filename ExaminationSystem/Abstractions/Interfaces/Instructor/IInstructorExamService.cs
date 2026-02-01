@@ -15,7 +15,7 @@ namespace ExaminationSystem.Abstractions.Interfaces.Instructor
             Task<List<InstructorAvailableExamVm>> GetAvailableExamsAsync(string instructorUserId);
 
         Task<InstructorExamDetailsVm?> GetExamDetailsAsync(string instructorUserId,int examId);
-        public Task<Result> GenerateAndAssignRandomExamAsync(int ExamId,
+        public Task<Result<ExamAssignmentResultVm>> GenerateAndAssignRandomExamAsync(int ExamId,
             int NumberOfMCQ, int NumberOfTrueFalse, int MaxStudnet = 20, CancellationToken cancellationToken = default);
     }
     

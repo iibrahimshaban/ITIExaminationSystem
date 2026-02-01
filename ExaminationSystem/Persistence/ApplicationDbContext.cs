@@ -1,5 +1,6 @@
 ﻿using ExaminationSystem.Entities;
 using ExaminationSystem.Persistence.SpDto;
+using ExaminationSystem.ViewModel;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Reflection;
 
@@ -13,6 +14,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         modelBuilder.Entity<CouresExamForInstructor>(e => { e.HasNoKey().ToView(null); });
+
+        modelBuilder.Entity<ExamAssignmentResultVm>().HasNoKey();
 
         base.OnModelCreating(modelBuilder);
     }
