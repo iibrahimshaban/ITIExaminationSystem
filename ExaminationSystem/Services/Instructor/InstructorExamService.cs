@@ -16,6 +16,42 @@ namespace ExaminationSystem.Services.Instructor
             _context = context;
         }
 
+        public async Task<List<InstructorExamVm>> GetUnpublishedExamsAsync(string instructorUserId)
+        {
+            var instructorId = await _context.Instructors
+                .Where(i => i.UserId == instructorUserId)
+                .Select(i => i.Id)
+                .FirstOrDefaultAsync();
+
+            if (instructorId == 0)
+                return new();
+
+            return await _context.Exams
+                .Where(e =>
+                    !e.IsPublished &&
+                    _context.CourseInstructors.Any(ci =>
+                        ci.CourseId == e.CourseId &&
+                        ci.InstructorId == instructorId &&
+                        !ci.HadLeft
+                    )
+                )
+                .Select(e => new InstructorExamVm
+                {
+                    ExamId = e.Id,
+                    CourseId = e.CourseId!.Value,
+                    CourseTitle = e.Course.Title,
+                    ExamTitle = e.Title,
+                    DurationInMinutes = e.DurationInMinutes,
+                    TotalPoints = e.TotalPoints,
+                    IsPublished = e.IsPublished,
+
+                    MCQCount = e.Questions.Count(q => q.Type == "MCQ"),
+                    TrueFalseCount = e.Questions.Count(q => q.Type == "TrueFalse")
+                })
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task<List<InstructorAvailableExamVm>> GetAvailableExamsAsync(string instructorUserId)
         {
             if (string.IsNullOrWhiteSpace(instructorUserId))
@@ -33,6 +69,55 @@ namespace ExaminationSystem.Services.Instructor
 
             return exams;
         }
+
+        // ================================
+        // Prepare Create Exam View
+        // ================================
+        public async Task<CreateExamVm?> PrepareCreateExamAsync(int courseId)
+        {
+            var course = await _context.Courses
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (course == null)
+                return null;
+
+            return new CreateExamVm
+            {
+                CourseId = course.Id,
+                CourseTitle = course.Title
+            };
+        }
+
+        // ================================
+        // Create Exam
+        // ================================
+        public async Task<int> CreateExamAsync(string instructorUserId, CreateExamVm model)
+        {
+            var instructor = await _context.Instructors
+                .FirstOrDefaultAsync(i => i.UserId == instructorUserId);
+
+            if (instructor == null)
+                throw new UnauthorizedAccessException("Instructor not found.");
+
+            var exam = new Exam
+            {
+                CourseId = model.CourseId,
+                Title = model.Title,
+                DurationInMinutes = model.DurationInMinutes,
+                TotalPoints = model.TotalPoints,
+                IsRandomized = model.IsRandomized,
+                IsPublished = false,
+                CreatedBy = instructor.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Exams.Add(exam);
+            await _context.SaveChangesAsync();
+
+            return exam.Id;
+        }
+
 
         public async Task<Result<ExamAssignmentResultVm>> GenerateAndAssignRandomExamAsync(
        int examId,

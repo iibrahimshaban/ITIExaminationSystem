@@ -14,9 +14,15 @@ namespace ExaminationSystem.Abstractions.Interfaces.Instructor
             /// <returns>List of available exams with course and question details</returns>
             Task<List<InstructorAvailableExamVm>> GetAvailableExamsAsync(string instructorUserId);
 
-        Task<InstructorExamDetailsVm?> GetExamDetailsAsync(string instructorUserId,int examId);
-        public Task<Result<ExamAssignmentResultVm>> GenerateAndAssignRandomExamAsync(int ExamId,
-            int NumberOfMCQ, int NumberOfTrueFalse, int MaxStudnet = 20, CancellationToken cancellationToken = default);
+            Task<List<InstructorExamVm>> GetUnpublishedExamsAsync(string instructorUserId);
+
+            Task<CreateExamVm?> PrepareCreateExamAsync(int courseId);
+
+            Task<int> CreateExamAsync(string instructorUserId, CreateExamVm model);
+
+            Task<InstructorExamDetailsVm?> GetExamDetailsAsync(string instructorUserId,int examId);
+            public Task<Result<ExamAssignmentResultVm>> GenerateAndAssignRandomExamAsync(int ExamId,
+                int NumberOfMCQ, int NumberOfTrueFalse, int MaxStudnet = 20, CancellationToken cancellationToken = default);
     }
     
 }

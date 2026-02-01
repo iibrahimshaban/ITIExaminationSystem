@@ -2,6 +2,7 @@
 using ExaminationSystem.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace ExaminationSystem.Controllers
@@ -69,6 +70,18 @@ namespace ExaminationSystem.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> UnpublishedExams()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var exams = await _instructorExamService
+                .GetUnpublishedExamsAsync(userId);
+
+            return View(exams);
+        }
+
+
+        [HttpGet]
         public async Task<IActionResult> ExamDetails( int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -83,6 +96,33 @@ namespace ExaminationSystem.Controllers
             return View(exam);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Create([FromQuery]int courseId)
+        {
+            var vm = await _instructorExamService.PrepareCreateExamAsync(courseId);
+
+            if (vm == null)
+                return NotFound();
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateExamVm model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var examId = await _instructorExamService.CreateExamAsync(userId, model);
+
+            return RedirectToAction("Exams");
+        }
+
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [HttpPost]
@@ -93,11 +133,7 @@ namespace ExaminationSystem.Controllers
                 return View("ExamDetails", model);
             }
 
-            var result = await _instructorExamService.GenerateAndAssignRandomExamAsync(
-     model.ExamId,
-     model.NumberOfMCQ,
-     model.NumberOfTrueFalse,
-     model.MaxStudents);
+            var result = await _instructorExamService.GenerateAndAssignRandomExamAsync( model.ExamId,model.NumberOfMCQ,model.NumberOfTrueFalse, model.MaxStudents);
 
             if (result.IsFailur)
             {
