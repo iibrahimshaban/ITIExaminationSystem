@@ -1,38 +1,25 @@
-﻿using ExaminationSystem.Persistence;
-using ExaminationSystem.Services;
+﻿using ExaminationSystem.Services;
 using ExaminationSystem.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace ExaminationSystem.Web.Controllers
 {
     [Authorize(Roles = "StudentRole")]
-    // NEW running
     public class StudentController : Controller
     {
         private readonly IStudentService _studentService;
-        private readonly ApplicationDbContext _context;
 
-        public StudentController(IStudentService studentService,ApplicationDbContext context)
+        public StudentController(IStudentService studentService)
         {
             _studentService = studentService;
-            _context = context;
         }
 
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (userId == null)
-                return Unauthorized();
-
-            var student = await _studentService.GetStudentByUserIdAsync(userId);
-
-            if (student == null)
-                return NotFound("Student profile not found");
-
+            var student = await _studentService.GetStudentByUserIdAsync(userId!);
             return View(student);
         }
 
@@ -40,20 +27,14 @@ namespace ExaminationSystem.Web.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var student = await _studentService.GetStudentByUserIdAsync(userId!);
-
-            var courses = await _studentService.GetStudentCoursesAsync(student!.Id);
-
-            return View(courses);
+            return View(await _studentService.GetStudentCoursesAsync(student!.Id));
         }
 
         public async Task<IActionResult> Exams()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var student = await _studentService.GetStudentByUserIdAsync(userId!);
-
-            var exams = await _studentService.GetAvailableExamsAsync(student!.Id);
-
-            return View(exams);
+            return View(await _studentService.GetAvailableExamsAsync(student!.Id));
         }
 
         public async Task<IActionResult> StartExam(int examId)
@@ -61,66 +42,73 @@ namespace ExaminationSystem.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var student = await _studentService.GetStudentByUserIdAsync(userId!);
 
-            // هل امتحن قبل كده؟
-            var previousSubmission = await _context.Submissions
-                .Include(s => s.Exam)
-                .FirstOrDefaultAsync(s =>
-                    s.StudentId == student!.Id &&
-                    s.ExamId == examId &&
-                    s.IsCorrective == false
-                );
+            try
+            {
+                var model = await _studentService
+                    .StartExamWithQuestionsAsync(student!.Id, examId);
 
-            if (previousSubmission != null)
+                return View("SolveExam", model);
+            }
+            catch (Exception ex)
             {
                 TempData["ToastType"] = "error";
-                TempData["ToastMessage"] =
-                    $"You already took this exam.<br/>" +
-                    $"Grade: <b>{previousSubmission.Grade}%</b><br/>" +
-                    $"Status: <b>{(previousSubmission.Grade >= 50 ? "Passed 🎉" : "Failed ❌")}</b>";
+                TempData["ToastMessage"] = ex.Message switch
+                {
+                    "EXAM_ALREADY_TAKEN" => "You already took this exam and cannot retake it.",
+                    "NOT_ENOUGH_QUESTIONS" => "This exam is not ready yet.",
+                    _ => "Something went wrong."
+                };
 
                 return RedirectToAction("Exams");
             }
-
-            var model = await _studentService
-                .StartExamWithQuestionsAsync(student.Id, examId);
-
-            return View("SolveExam", model);
         }
 
-
-
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> SubmitExam(SubmitExamVM model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var student = await _studentService.GetStudentByUserIdAsync(userId!);
+            if (model.Answers == null || model.Answers.Count == 0)
+            {
+                TempData["ToastType"] = "error";
+                TempData["ToastMessage"] = "❗ Please answer at least one question.";
+                return RedirectToAction("Exams");
+            }
 
-            if (model.ExamId <= 0)
-                return BadRequest("ExamId not received from view");
+            try
+            {
+                var submissionId = await _studentService.SubmitExamUsingSpAsync(
+                    student!.Id,
+                    model.ExamId,
+                    model.Answers
+                );
 
+                return RedirectToAction("Result", new { submissionId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ToastType"] = "error";
 
-            var submissionId = await _studentService.SubmitExamUsingSpAsync(
-                student!.Id,
-                model.ExamId,
-                model.Answers
-            );
+                TempData["ToastMessage"] = ex.Message switch
+                {
+                    "NO_ANSWERS" =>
+                        "❗ You must answer the exam before submitting.",
 
-            return RedirectToAction("Result", new { submissionId });
+                    "EXAM_ALREADY_SUBMITTED" =>
+                        "❌ You already submitted this exam.",
+
+                    _ =>
+                        "⚠️ Something went wrong. Please try again."
+                };
+
+                return RedirectToAction("Exams");
+            }
         }
 
 
         public async Task<IActionResult> Result(long submissionId)
         {
-            var submission = await _studentService
-                .GetSubmissionResultAsync(submissionId);
-
-            return View(submission);
+            return View(await _studentService.GetSubmissionResultAsync(submissionId));
         }
-
-
     }
 }

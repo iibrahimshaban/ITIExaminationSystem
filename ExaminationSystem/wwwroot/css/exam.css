@@ -1,0 +1,17 @@
+﻿.exam-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.question-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+.submit-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+}

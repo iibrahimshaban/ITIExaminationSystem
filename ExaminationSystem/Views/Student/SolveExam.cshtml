@@ -1,67 +1,37 @@
 ﻿@model SolveExamVM
+<link rel="stylesheet" href="~/css/exam.css" />
 
-<h2>@Model.ExamTitle</h2>
-<p>Duration: @Model.DurationInMinutes minutes</p>
-<div id="timer" style="font-size:20px; font-weight:bold; color:red;">
-    Time Left: <span id="time"></span>
+<div class="exam-header">
+    <h2>@Model.ExamTitle</h2>
+    <div id="timer"></div>
 </div>
 
 <form asp-action="SubmitExam" method="post">
-   
     <input type="hidden" name="ExamId" value="@Model.ExamId" />
+
     @for (int i = 0; i < Model.Questions.Count; i++)
     {
-        <div>
-            <p>@(i + 1). @Model.Questions[i].Body</p>
+        <div class="question-card">
+            <h4>Question @(i + 1)</h4>
+            <p>@Model.Questions[i].Body</p>
 
-            @if (Model.Questions[i].Type == "MCQ")
+            @foreach (var c in Model.Questions[i].Choices ?? new())
             {
-                foreach (var choice in Model.Questions[i].Choices!)
-                {
-                    <label>
-                        <input type="radio"
-                               name="Answers[@Model.Questions[i].QuestionId]"
-                               value="@choice.ChoiceId" />
-                        @choice.Body
-                    </label>
+                <label>
+                    <input type="radio"
+                           name="Answers[@Model.Questions[i].QuestionId]"
+                           value="@c.ChoiceId" /> @c.Body
+                </label>
         
-                    <br />
-                }
-            }
-            else
-            {
-                <label>
-                    <input type="radio"
-                           name="Answers[@Model.Questions[i].QuestionId]"
-                           value="true" /> True
-                </label>
-                <label>
-                    <input type="radio"
-                           name="Answers[@Model.Questions[i].QuestionId]"
-                           value="false" /> False
-                </label>
+                <br />
             }
         </div>
     }
-    <button type="submit">Submit</button>
+
+    <button class="submit-btn">Submit Exam</button>
 </form>
+
+<script src="~/js/exam-timer.js"></script>
 <script>
-    let duration = @Model.DurationInMinutes * 60; // seconds
-    let timerDisplay = document.getElementById("time");
-
-    let interval = setInterval(function () {
-        let minutes = Math.floor(duration / 60);
-        let seconds = duration % 60;
-
-        timerDisplay.textContent =
-            minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-
-        duration--;
-
-        if (duration < 0) {
-            clearInterval(interval);
-            alert("Time is up! Exam will be submitted automatically.");
-            document.forms[0].submit();
-        }
-    }, 1000);
+    startTimer(@Model.DurationInMinutes * 60);
 </script>

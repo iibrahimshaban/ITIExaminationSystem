@@ -3,43 +3,42 @@ using ExaminationSystem.ViewModel;
 
 namespace ExaminationSystem.Services
 {
-    // new running 
     public interface IStudentService
     {
-        // Student Profile
+        // ================= Student =================
         Task<Student?> GetStudentByUserIdAsync(string userId);
 
-        // Courses
+        // ================= Courses =================
         Task<List<Course>> GetStudentCoursesAsync(int studentId);
 
-        // Exams
+        // ================= Exams =================
         Task<List<Exam>> GetAvailableExamsAsync(int studentId);
 
-        // Exam Flow
-        Task<long> StartExamAsync(int studentId, int examId);
+        // ================= Exam Flow =================
 
-        Task SubmitExamAsync(
-      long submissionId,
-      Dictionary<int, string> answers
-     );
-
-
-        Task<Submission?> GetSubmissionResultAsync(long submissionId);
-
-        // Optional
-        Task<List<Submission>> GetPreviousSubmissionsAsync(int studentId);
-
-
-        // 
+        /// <summary>
+        /// Load exam with 10 random questions after validating:
+        /// - Exam is published
+        /// - Student did not take the exam before (non-corrective)
+        /// - Exam has enough questions
+        /// </summary>
         Task<SolveExamVM> StartExamWithQuestionsAsync(int studentId, int examId);
+
+        /// <summary>
+        /// Submit exam answers using stored procedure.
+        /// This method:
+        /// - Prevents double submission
+        /// - Stores answers
+        /// - Calculates grade
+        /// - Returns SubmissionId
+        /// </summary>
         Task<long> SubmitExamUsingSpAsync(
-  int studentId,
-  int examId,   
-  Dictionary<int, string> answers
-);
+            int studentId,
+            int examId,
+            Dictionary<int, string> answers
+        );
 
-
-        Task<bool> CanStartExamAsync(int studentId, int examId);
-
+        // ================= Results =================
+        Task<Submission?> GetSubmissionResultAsync(long submissionId);
     }
 }

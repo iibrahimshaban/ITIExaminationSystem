@@ -1,21 +1,15 @@
-﻿@using ExaminationSystem.Entities
-@model List<Exam>
+﻿@model List<ExaminationSystem.Entities.Exam>
 
 <h2>Available Exams</h2>
 
-<table>
-    <tr>
-        <th>Title</th>
-        <th>Duration</th>
-        <th></th>
-    </tr>
+<table class="table">
     @foreach (var exam in Model)
     {
         <tr>
             <td>@exam.Title</td>
-            <td>@exam.DurationInMinutes minutes</td>
+            <td>@exam.DurationInMinutes min</td>
             <td>
-                <a asp-action="StartExam" asp-route-examId="@exam.Id">
+                <a asp-action="StartExam" asp-route-examId="@exam.Id" class="btn">
                     Start
                 </a>
             </td>

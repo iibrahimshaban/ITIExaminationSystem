@@ -1,16 +1,9 @@
-﻿@using ExaminationSystem.Entities
-@model Submission
+﻿@model ExaminationSystem.Entities.Submission
 
 <h2>Exam Result</h2>
 
-<p>
-    Grade: <strong>@Model.Grade %</strong>
+<p class="result">
+    Your Grade: <strong>@Model.Grade</strong>
 </p>
 
 <a asp-action="Index">Back to Dashboard</a>
-<script>
-    history.pushState(null, null, location.href);
-    window.onpopstate = function () {
-        history.go(1);
-    };
-</script>
