@@ -24,8 +24,7 @@ public static class DependancyInjection
 
     private static IServiceCollection AddServiceRegistration(this IServiceCollection services)
     {
-        services.AddScoped<IInstructorServcie, InstructorService>();
-
+   
         return services;
     }
     private static IServiceCollection AddIdentityConfiguration(this IServiceCollection services)

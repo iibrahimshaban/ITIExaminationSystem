@@ -94,21 +94,19 @@ namespace ExaminationSystem.Controllers
             }
 
             var result = await _instructorExamService.GenerateAndAssignRandomExamAsync(
-                model.ExamId,
-                model.NumberOfMCQ,
-                model.NumberOfTrueFalse,
-                model.MaxStudents);
+     model.ExamId,
+     model.NumberOfMCQ,
+     model.NumberOfTrueFalse,
+     model.MaxStudents);
 
             if (result.IsFailur)
             {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Unable to assign exam. Please check question counts."
-                );
-
-                // 👇 stay on same page, same exam
+                ModelState.AddModelError("", "No students were assigned.");
                 return View("ExamDetails", model);
             }
+
+            TempData["Success"] =
+                $"Assigned exam to {result.Value.StudentsProcessed} students.";
 
             return RedirectToAction("Exams");
         }

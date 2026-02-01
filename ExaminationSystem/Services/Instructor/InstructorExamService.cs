@@ -34,21 +34,35 @@ namespace ExaminationSystem.Services.Instructor
             return exams;
         }
 
-        public async Task<Result> GenerateAndAssignRandomExamAsync(int ExamId, int NumberOfMCQ, int NumberOfTrueFalse, int MaxStudnet = 20, CancellationToken cancellationToken = default)
+        public async Task<Result<ExamAssignmentResultVm>> GenerateAndAssignRandomExamAsync(
+       int examId,
+       int numberOfMCQ,
+       int numberOfTrueFalse,
+       int maxStudents = 20,
+       CancellationToken cancellationToken = default)
         {
-            var affectedRows = await _context.Database.ExecuteSqlRawAsync(
-                "EXEC AssignRandomQuestionsToAllStudents @ExamId, @MCQCount, @TrueFalseCount, @MaxStudents",
-                new SqlParameter("@ExamId", ExamId),
-                new SqlParameter("@MCQCount", NumberOfMCQ),
-                new SqlParameter("@TrueFalseCount", NumberOfTrueFalse),
-                new SqlParameter("@MaxStudents", MaxStudnet)
-            );
+            var results = await _context.Set<ExamAssignmentResultVm>()
+                .FromSqlRaw(
+                    "EXEC dbo.AssignRandomQuestionsToAllStudents @ExamId, @MCQCount, @TrueFalseCount, @MaxStudents",
+                    new SqlParameter("@ExamId", examId),
+                    new SqlParameter("@MCQCount", numberOfMCQ),
+                    new SqlParameter("@TrueFalseCount", numberOfTrueFalse),
+                    new SqlParameter("@MaxStudents", maxStudents)
+                )
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);   // ✅ MATERIALIZE HERE
 
-            // You may want to return a Result based on affectedRows, e.g.:
-            return affectedRows > 0
-                ? Result.Success()
-                : Result.Failure(InstructorErrors.InvalidSp);
+            var result = results.FirstOrDefault();
+
+            if (result == null || result.StudentsProcessed == 0)
+            {
+                return Result.Failure<ExamAssignmentResultVm>(InstructorErrors.InvalidSp);
+            }
+
+            return Result.Success(result);
         }
+
+
 
 
         public async Task<InstructorExamDetailsVm?> GetExamDetailsAsync(string instructorUserId,int examId)
