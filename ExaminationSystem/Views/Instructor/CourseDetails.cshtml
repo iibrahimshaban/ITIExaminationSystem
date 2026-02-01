@@ -228,9 +228,11 @@
     <a asp-action="index" asp-controller="Instructor" class="btn btn-outline-primary">
         <i class="bi bi-arrow-left me-2"></i>Back to My Courses
     </a>
-    <button type="button" class="btn btn-secondary" disabled>
-        <i class="bi bi-file-earmark-text me-2"></i>View Exams
-        <small class="ms-1">(Coming Soon)</small>
-    </button>
+
+    <a asp-action="Create" asp-controller="Instructor" asp-route-courseId="@Model.CourseId" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>
+        Create Exam
+    </a>
+
 </div>
 

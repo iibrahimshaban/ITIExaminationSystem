@@ -1,0 +1,205 @@
+﻿
+@{
+    ViewData["Title"] = "Create Exam";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model CreateExamVm
+
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="MyCourses" asp-controller="Instructor">My Courses</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="CourseDetails" asp-controller="Instructor" asp-route-id="@Model.CourseId">
+                    Course Details
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Create Exam</li>
+        </ol>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-file-earmark-plus text-primary fs-2 me-3"></i>
+        <h2 class="mb-0">Create Exam</h2>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle text-primary me-2"></i>Exam Information
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" asp-for="CourseId" />
+
+                        <!-- Course Title (Read-only) -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-book me-1"></i>Course
+                            </label>
+                            <div class="form-control bg-light" readonly>
+                                @Model.CourseTitle
+                            </div>
+                        </div>
+
+                        <!-- Exam Title -->
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label fw-semibold">
+                                <i class="bi bi-pencil me-1"></i>Exam Title
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Title" class="form-control" placeholder="Enter exam title" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Duration in Minutes -->
+                        <div class="mb-4">
+                            <label asp-for="DurationInMinutes" class="form-label fw-semibold">
+                                <i class="bi bi-clock me-1"></i>Duration (Minutes)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="DurationInMinutes" type="number" min="1" class="form-control" placeholder="e.g., 60" />
+                            <span asp-validation-for="DurationInMinutes" class="text-danger small"></span>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle-fill me-1"></i>Specify how long students have to complete the exam
+                            </div>
+                        </div>
+
+                        <!-- Total Points -->
+                        <div class="mb-4">
+                            <label asp-for="TotalPoints" class="form-label fw-semibold">
+                                <i class="bi bi-trophy me-1"></i>Total Points
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="TotalPoints" type="number" min="1" class="form-control" placeholder="e.g., 100" />
+                            <span asp-validation-for="TotalPoints" class="text-danger small"></span>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle-fill me-1"></i>Maximum score students can achieve
+                            </div>
+                        </div>
+
+                        <!-- IsRandomized Checkbox -->
+                        <div class="mb-4">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input asp-for="IsRandomized" class="form-check-input" type="checkbox" />
+                                        <label asp-for="IsRandomized" class="form-check-label fw-semibold">
+                                            <i class="bi bi-shuffle me-1"></i>Randomize Questions
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="bi bi-lightbulb me-1"></i>
+                                        When enabled, each student will receive questions in a different order to reduce cheating
+                                    </small>
+                                    <span asp-validation-for="IsRandomized" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+                            <a asp-action="CourseDetails" asp-controller="Instructor" asp-route-id="@Model.CourseId"
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Create Exam
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <style>
+        :root {
+            --primary-color: #1B3C53;
+            --secondary-color: #456882;
+            --accent-color: #D2C1B6;
+            --background-color: #F9F3EF;
+        }
+
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-outline-secondary {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: #fff;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--secondary-color);
+        }
+
+        .card {
+            border-radius: 0.5rem;
+        }
+
+        .card-header {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+
+        .form-control:focus,
+        .form-check-input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(69, 104, 130, 0.25);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+    </style>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
