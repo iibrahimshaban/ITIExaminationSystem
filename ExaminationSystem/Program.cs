@@ -1,12 +1,16 @@
 using ExaminationSystem.Entities;
 using ExaminationSystem.Persistence;
+using ExaminationSystem.Services;
+using ExaminationSystem.Services.Admin;
+using ExaminationSystem.Services.Instructor;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Services
 builder.Services.AddControllersWithViews();
 builder.Services.AddDependacies(builder.Configuration);
-
+builder.Services.AddScoped<IInstructorService, InstructorService>();
+builder.Services.AddScoped<IUserProvisioningService, UserProvisioningService>();
 var app = builder.Build();
 
 #region Apply Migrations
