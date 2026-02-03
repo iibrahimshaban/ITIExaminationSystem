@@ -1,0 +1,318 @@
+﻿
+
+@model List<InstructorExamVm>
+
+@{
+    ViewData["Title"] = "Unpublished Exams";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h2 class="mb-2">
+            <i class="bi bi-file-earmark-lock text-primary me-2"></i>Unpublished Exams
+        </h2>
+        <p class="text-muted mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            These exams are not visible to students yet. Add questions and publish when ready.
+        </p>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <!-- Empty State -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="text-muted mb-3">No Unpublished Exams</h4>
+                <p class="text-muted mb-4">
+                    All your exams have been published, or you haven't created any exams yet.
+                </p>
+                <a asp-action="MyCourses" asp-controller="Instructor" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Go to My Courses
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Exams Table Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul text-primary me-2"></i>Exam List
+                    </h5>
+                    <span class="badge bg-secondary rounded-pill px-3 py-2">
+                        @Model.Count @(Model.Count == 1 ? "Exam" : "Exams")
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">
+                                    <i class="bi bi-book me-1"></i>Course
+                                </th>
+                                <th scope="col" class="py-3">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Exam Title
+                                </th>
+                                <th scope="col" class="py-3 text-center">
+                                    <i class="bi bi-clock me-1"></i>Duration
+                                </th>
+                                <th scope="col" class="py-3 text-center">
+                                    <i class="bi bi-trophy me-1"></i>Points
+                                </th>
+                                <th scope="col" class="py-3 text-center">
+                                    <i class="bi bi-list-check me-1"></i>MCQ
+                                </th>
+                                <th scope="col" class="py-3 text-center">
+                                    <i class="bi bi-toggle-on me-1"></i>T/F
+                                </th>
+                                <th scope="col" class="py-3 text-center">Status</th>
+                                <th scope="col" class="px-4 py-3 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var exam in Model)
+                            {
+                                var canPublish = exam.MCQCount >= 7 && exam.TrueFalseCount >= 3;
+                                var tooltipMessage = !canPublish ? "Exam must contain at least 7 MCQ and 3 True/False questions" : "";
+
+                                <tr class="exam-row">
+                                    <td class="px-4">
+                                        <span class="fw-semibold text-primary">@exam.CourseTitle</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">@exam.ExamTitle</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">
+                                            @exam.DurationInMinutes min
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">
+                                            @exam.TotalPoints pts
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @(exam.MCQCount >= 7 ? "bg-success" : "bg-warning text-dark")">
+                                            @exam.MCQCount
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @(exam.TrueFalseCount >= 3 ? "bg-success" : "bg-warning text-dark")">
+                                            @exam.TrueFalseCount
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-eye-slash me-1"></i>Unpublished
+                                        </span>
+                                    </td>
+                                    <td class="px-4">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <!-- Add Questions Button -->
+                                            <a href="/Instructor/Questions/Create?examId=@exam.ExamId"
+                                               class="btn btn-sm btn-outline-primary"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-placement="top"
+                                               title="Add questions to this exam">
+                                                <i class="bi bi-plus-circle me-1"></i>Add Questions
+                                            </a>
+
+                                            <!-- Publish Button -->
+                                            @if (canPublish)
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-sm btn-success publish-btn"
+                                                        data-exam-id="@exam.ExamId"
+                                                        data-exam-title="@exam.ExamTitle"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        title="Publish this exam to make it visible to students">
+                                                    <i class="bi bi-check-circle me-1"></i>Publish
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-sm btn-secondary"
+                                                        disabled
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        title="@tooltipMessage">
+                                                    <i class="bi bi-lock me-1"></i>Publish
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Hidden Publish Form -->
+<form id="publishForm" asp-action="Publish" asp-controller="Instructor" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="publishExamId" name="examId" />
+</form>
+
+<!-- Publish Confirmation Modal -->
+<div class="modal fade" id="publishModal" tabindex="-1" aria-labelledby="publishModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="publishModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>Confirm Publish
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Are you sure you want to publish this exam?</p>
+                <p class="fw-semibold text-primary mb-3" id="examTitleToPublish"></p>
+                <div class="alert alert-info mb-0" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Once published, this exam will be visible to all students in the course.
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="confirmPublishBtn">
+                    <i class="bi bi-check-circle me-1"></i>Yes, Publish
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <style>
+        :root {
+            --primary-color: #1B3C53;
+            --secondary-color: #456882;
+            --accent-color: #D2C1B6;
+            --background-color: #F9F3EF;
+        }
+
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+            .btn-primary:hover {
+                background-color: var(--secondary-color);
+                border-color: var(--secondary-color);
+            }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+            .btn-outline-primary:hover {
+                background-color: var(--primary-color);
+                border-color: var(--primary-color);
+            }
+
+        .bg-secondary {
+            background-color: var(--secondary-color) !important;
+        }
+
+        .badge.bg-secondary {
+            background-color: var(--secondary-color) !important;
+        }
+
+        .exam-row {
+            transition: background-color 0.2s ease;
+        }
+
+            .exam-row:hover {
+                background-color: rgba(27, 60, 83, 0.03);
+            }
+
+        .table-light {
+            background-color: rgba(249, 243, 239, 0.5);
+        }
+
+        .card {
+            border-radius: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.75rem;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+    </style>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Publish button click handlers
+            var publishButtons = document.querySelectorAll('.publish-btn');
+            var publishModal = new bootstrap.Modal(document.getElementById('publishModal'));
+            var confirmPublishBtn = document.getElementById('confirmPublishBtn');
+            var publishForm = document.getElementById('publishForm');
+            var publishExamIdInput = document.getElementById('publishExamId');
+            var examTitleToPublish = document.getElementById('examTitleToPublish');
+
+            var currentExamId = null;
+
+            publishButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    currentExamId = this.getAttribute('data-exam-id');
+                    var examTitle = this.getAttribute('data-exam-title');
+
+                    examTitleToPublish.textContent = examTitle;
+                    publishModal.show();
+                });
+            });
+
+            confirmPublishBtn.addEventListener('click', function() {
+                if (currentExamId) {
+                    publishExamIdInput.value = currentExamId;
+                    publishForm.submit();
+                }
+            });
+        });
+    </script>
+}
+

@@ -1,0 +1,33 @@
+﻿@model InstructorExamDetailsVm
+
+@{
+    ViewData["Title"] = "ExamDetails";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>ExamDetails</h1>
+
+<form asp-action="AssignExam" method="post">
+    <input type="hidden" asp-for="ExamId" />
+
+    <div class="row">
+        <div class="col-md-4">
+            <label>MCQ Questions</label>
+            <input asp-for="@Model.NumberOfMCQ" class="form-control" />
+        </div>
+
+        <div class="col-md-4">
+            <label>True / False Questions</label>
+            <input asp-for="@Model.NumberOfTrueFalse" class="form-control" />
+        </div>
+
+        <div class="col-md-4">
+            <label>Max Students</label>
+            <input asp-for="@Model.MaxStudents" class="form-control" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">
+        Assign Exam to Students
+    </button>
+</form>

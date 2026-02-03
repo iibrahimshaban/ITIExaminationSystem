@@ -1,4 +1,5 @@
 ﻿using ExaminationSystem.Abstractions.Consts;
+using ExaminationSystem.Abstractions.Interfaces;
 using ExaminationSystem.Entities;
 using ExaminationSystem.ViewModel;
 using Microsoft.AspNetCore.Authorization;
@@ -13,11 +14,18 @@ namespace ExaminationSystem.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
-        public AccountController( UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager)
+        private readonly IUserProvisioningService _userProvisioningService;
+
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            RoleManager<ApplicationRole> roleManager,
+            IUserProvisioningService userProvisioningService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _userProvisioningService = userProvisioningService;
         }
         #region Login
 
@@ -104,6 +112,7 @@ namespace ExaminationSystem.Controllers
         #region Register
 
         [HttpGet]
+        // [Authorize(Roles = "Admin")]
         public IActionResult Register(string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -111,24 +120,23 @@ namespace ExaminationSystem.Controllers
             var model = new RegisterVm
             {
                 RedirectUrl = returnUrl,
-
-                // Optional: show roles ONLY if admin is creating users
-                RoleList = _roleManager.Roles.Select(r => new SelectListItem
-                {
-                    Text = r.Name,
-                    Value = r.Name
-                })
+                RoleList = _userProvisioningService.GetRoles(),
+                BranchList = _userProvisioningService.GetBranches(),
+                TrackList = _userProvisioningService.GetTracks(),
+                CourseList = _userProvisioningService.GetCourses()
             };
 
             return View(model);
         }
 
         [HttpPost]
+        //  [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterVm model)
         {
             if (!ModelState.IsValid)
             {
-                ReloadRoles(model);
+                ReloadLookups(model);
                 return View(model);
             }
 
@@ -149,34 +157,32 @@ namespace ExaminationSystem.Controllers
                 foreach (var error in result.Errors)
                     ModelState.AddModelError(string.Empty, error.Description);
 
-                ReloadRoles(model);
+                ReloadLookups(model);
                 return View(model);
             }
 
-           
-            var roleToAssign = string.IsNullOrEmpty(model.Role)
-                ? DefaultRoles.StudentRole.Name   // default role
+            var role = string.IsNullOrWhiteSpace(model.Role)
+                ? DefaultRoles.StudentRole.Name
                 : model.Role;
 
-            await _userManager.AddToRoleAsync(user, roleToAssign);
+            await _userManager.AddToRoleAsync(user, role);
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _userProvisioningService.CreateDomainProfileAsync(user, role, model);
 
-            return string.IsNullOrEmpty(model.RedirectUrl)
-                ? RedirectToAction("Index", "Home")
-                : LocalRedirect(model.RedirectUrl);
+            return RedirectToAction("Index", "Admin");
         }
 
-        private void ReloadRoles(RegisterVm model)
+        private void ReloadLookups(RegisterVm model)
         {
-            model.RoleList = _roleManager.Roles.Select(r => new SelectListItem
-            {
-                Text = r.Name,
-                Value = r.Name
-            });
+            model.RoleList = _userProvisioningService.GetRoles();
+            model.BranchList = _userProvisioningService.GetBranches();
+            model.TrackList = _userProvisioningService.GetTracks();
+            model.CourseList = _userProvisioningService.GetCourses();
         }
+
 
         #endregion
+
 
     }
 }
