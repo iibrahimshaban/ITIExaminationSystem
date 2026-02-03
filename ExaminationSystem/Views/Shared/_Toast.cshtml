@@ -1,0 +1,50 @@
+﻿<style>
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: -400px;
+        width: 320px;
+        padding: 15px;
+        background-color: #333;
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        transition: right 0.5s ease;
+        z-index: 9999;
+    }
+
+        .toast.show {
+            right: 20px;
+        }
+
+        .toast.error {
+            background-color: #d9534f;
+        }
+
+        .toast.success {
+            background-color: #5cb85c;
+        }
+
+        .toast.info {
+            background-color: #0275d8;
+        }
+
+</style>
+@if (TempData["ToastMessage"] != null)
+{
+    var type = TempData["ToastType"]?.ToString() ?? "info";
+
+    <div id="toast" class="toast @type">
+        @Html.Raw(TempData["ToastMessage"])
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById("toast")?.classList.add("show");
+        }, 100);
+
+        setTimeout(() => {
+            document.getElementById("toast")?.classList.remove("show");
+        }, 5000);
+    </script>
+}

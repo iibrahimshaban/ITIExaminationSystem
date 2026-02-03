@@ -1,0 +1,1085 @@
+﻿@using ExaminationSystem.Entities
+@model List<Course>
+
+<div class="courses-container">
+    <!-- Header Section -->
+    <div class="courses-header animated-fade-in">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-graduation-cap"></i>
+                My Learning Dashboard
+            </h1>
+            <p class="page-subtitle">Track and manage all your enrolled courses</p>
+        </div>
+        <div class="header-stats">
+            <div class="stat-card pulse-animation">
+                <span class="stat-number">@Model.Count</span>
+                <span class="stat-label">Total Courses</span>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Search & Filter Bar -->
+        <div class="filter-section slide-in-up">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="courseSearch" placeholder="Search courses by title, code or instructor..." class="search-input">
+            </div>
+            <div class="filter-options">
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">All Status</option>
+                    <option value="active">Active Only</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <select id="durationFilter" class="filter-select">
+                    <option value="all">Any Duration</option>
+                    <option value="short">Short (1-7 days)</option>
+                    <option value="medium">Medium (8-30 days)</option>
+                    <option value="long">Long (30+ days)</option>
+                </select>
+                <button class="btn-sort" id="sortAlpha">
+                    <i class="fas fa-sort-alpha-down"></i> Sort A-Z
+                </button>
+            </div>
+        </div>
+
+        <!-- Courses Grid -->
+        <div class="courses-grid" id="coursesGrid">
+            @foreach (var course in Model.OrderByDescending(c => c.IsActive))
+            {
+                <div class="course-card animated-card" data-status="@(course.IsActive ? "active" : "inactive")"
+                     data-duration="@course.DurationDays" data-title="@course.Title.ToLower()">
+                    <!-- Card Header -->
+                    <div class="card-header">
+                        <div class="course-code">@course.CourseCode</div>
+                        <div class="status-indicator @(course.IsActive ? "active" : "inactive")">
+                            <span class="status-dot"></span>
+                            @(course.IsActive ? "Active" : "Inactive")
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <h3 class="course-title" title="@course.Title">@course.Title</h3>
+
+                        @if (!string.IsNullOrEmpty(course.Description))
+                        {
+                            <p class="course-description">@course.Description</p>
+                        }
+
+                        <div class="course-meta">
+                            @if (course.DurationDays.HasValue)
+                            {
+                                <div class="meta-item">
+                                    <i class="far fa-clock"></i>
+                                    <span>@course.DurationDays days</span>
+                                </div>
+                            }
+
+                            @if (course.Track != null)
+                            {
+                                <div class="meta-item">
+                                    <i class="fas fa-road"></i>
+                                    <span>@course.Track.Title</span>
+                                </div>
+                            }
+
+                            <div class="meta-item">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>@course.Topics.Count topics</span>
+                            </div>
+
+                            <div class="meta-item">
+                                <i class="fas fa-file-alt"></i>
+                                <span>@course.Exams.Count exams</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar (Optional - you can add progress property later) -->
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span>65%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="card-footer">
+                        <button class="btn-view btn-hover-effect" onclick="viewCourseDetails(@course.Id)">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <div class="action-buttons">
+                            <button class="btn-icon" title="Quick Access" onclick="quickAccess(@course.Id)">
+                                <i class="fas fa-bolt"></i>
+                            </button>
+                            <button class="btn-icon" title="Materials" onclick="viewMaterials(@course.Id)">
+                                <i class="fas fa-book"></i>
+                            </button>
+                            <button class="btn-icon" title="Exams" onclick="viewExams(@course.Id)">
+                                <i class="fas fa-file-signature"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div class="stats-dashboard animated-slide-in">
+            <h3><i class="fas fa-chart-line"></i> Learning Analytics</h3>
+            <div class="stats-grid">
+                <div class="stat-box glowing-border">
+                    <div class="stat-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Count(c => c.IsActive)</h4>
+                        <p>Active Courses</p>
+                    </div>
+                </div>
+
+                <div class="stat-box glowing-border">
+                    <div class="stat-icon">
+                        <i class="fas fa-list-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Sum(c => c.Topics.Count)</h4>
+                        <p>Total Topics</p>
+                    </div>
+                </div>
+
+                <div class="stat-box glowing-border">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Sum(c => c.Exams.Count)</h4>
+                        <p>Total Exams</p>
+                    </div>
+                </div>
+
+                <div class="stat-box glowing-border">
+                    <div class="stat-icon">
+                        <i class="fas fa-road"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Select(c => c.TrackId).Distinct().Count()</h4>
+                        <p>Learning Tracks</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="empty-state animated-fade-in">
+            <div class="empty-state-icon">
+                <i class="fas fa-book fa-4x"></i>
+            </div>
+            <h3>No Courses Enrolled</h3>
+            <p>You haven't enrolled in any courses yet. Start your learning journey now!</p>
+            <button class="btn-primary btn-hover-grow" onclick="browseCourses()">
+                <i class="fas fa-search"></i> Browse Available Courses
+            </button>
+        </div>
+    }
+
+    <!-- Quick Actions Panel -->
+    <div class="quick-actions animated-slide-in">
+        <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+        <div class="actions-grid">
+            <button class="action-btn" onclick="continueLearning()">
+                <i class="fas fa-play-circle"></i>
+                <span>Continue Learning</span>
+            </button>
+            <button class="action-btn" onclick="upcomingExams()">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Upcoming Exams</span>
+            </button>
+            <button class="action-btn" onclick="downloadMaterials()">
+                <i class="fas fa-download"></i>
+                <span>Download Materials</span>
+            </button>
+            <button class="action-btn" onclick="requestSupport()">
+                <i class="fas fa-headset"></i>
+                <span>Get Support</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@* @section Styles { *@
+    <style>
+        :root {
+            --primary-color: #1B3C53;
+            --primary-light: #2A4D6E;
+            --primary-dark: #0F2838;
+            --secondary-color: #4A90E2;
+            --accent-color: #00D4AA;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --bg-light: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border-color: #E1E8ED;
+            --success-color: #00C853;
+            --warning-color: #FF9800;
+            --shadow-sm: 0 2px 8px rgba(27, 60, 83, 0.08);
+            --shadow-md: 0 4px 16px rgba(27, 60, 83, 0.12);
+            --shadow-lg: 0 8px 32px rgba(27, 60, 83, 0.15);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .courses-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e8f4fd 100%);
+            min-height: 100vh;
+        }
+
+        .courses-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .courses-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title i {
+            color: var(--accent-color);
+            font-size: 2.2rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .header-stats {
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            min-width: 150px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(27, 60, 83, 0.1);
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-select, .btn-sort {
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-select:focus, .btn-sort:hover {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .btn-sort {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-light);
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .card-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .course-code {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-color);
+        }
+
+        .status-indicator.inactive .status-dot {
+            background: var(--text-secondary);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .course-title {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .course-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .course-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-item i {
+            color: var(--primary-color);
+            width: 16px;
+        }
+
+        .progress-section {
+            padding: 0 25px 20px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+            border-radius: 3px;
+            transition: width 1s ease-in-out;
+        }
+
+        .card-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-view {
+            padding: 10px 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-hover-effect:hover {
+            background: var(--primary-light);
+            transform: translateX(5px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--primary-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn-icon:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .stats-dashboard {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .stats-dashboard h3 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-box {
+            padding: 25px;
+            border-radius: var(--border-radius);
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .glowing-border:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 212, 170, 0.2);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .stat-content h4 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin: 0 0 5px 0;
+        }
+
+        .stat-content p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .empty-state-icon {
+            margin-bottom: 30px;
+        }
+
+        .empty-state-icon i {
+            color: var(--border-color);
+            font-size: 4rem;
+        }
+
+        .empty-state h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+
+        .btn-primary {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-hover-grow:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .quick-actions h4 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 20px;
+            background: var(--bg-light);
+            border: 2px solid transparent;
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent-color);
+            background: white;
+            transform: translateY(-3px);
+        }
+
+        .action-btn i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Animations */
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @@keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @@keyframes cardFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animated-fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .animated-slide-in {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        .animated-card {
+            animation: slideInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .animated-card:nth-child(1) { animation-delay: 0.1s; }
+        .animated-card:nth-child(2) { animation-delay: 0.2s; }
+        .animated-card:nth-child(3) { animation-delay: 0.3s; }
+        .animated-card:nth-child(4) { animation-delay: 0.4s; }
+        .animated-card:nth-child(5) { animation-delay: 0.5s; }
+        .animated-card:nth-child(6) { animation-delay: 0.6s; }
+        .animated-card:nth-child(7) { animation-delay: 0.7s; }
+        .animated-card:nth-child(8) { animation-delay: 0.8s; }
+
+        /* Responsive Design */
+        @@media (max-width: 1024px) {
+            .courses-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .courses-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-options {
+                flex-direction: column;
+            }
+
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .courses-container {
+                padding: 15px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .course-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid,
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+@* } *@
+
+@* @section Scripts { *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize animations
+            initializeAnimations();
+
+            // Setup search functionality
+            setupSearch();
+
+            // Setup filter functionality
+            setupFilters();
+
+            // Setup sort functionality
+            setupSort();
+
+            // Add hover effects to cards
+            setupCardHoverEffects();
+        });
+
+        function initializeAnimations() {
+            // Add intersection observer for scroll animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            // Observe all cards
+            document.querySelectorAll('.course-card').forEach(card => {
+                observer.observe(card);
+            });
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('courseSearch');
+            const coursesGrid = document.getElementById('coursesGrid');
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const courseCards = coursesGrid.querySelectorAll('.course-card');
+
+                courseCards.forEach(card => {
+                    const title = card.getAttribute('data-title');
+                    const courseCode = card.querySelector('.course-code').textContent.toLowerCase();
+
+                    if (title.includes(searchTerm) || courseCode.includes(searchTerm)) {
+                        card.style.display = 'block';
+                        card.classList.add('search-match');
+                        card.animate([
+                            { backgroundColor: 'rgba(0, 212, 170, 0.1)' },
+                            { backgroundColor: 'white' }
+                        ], {
+                            duration: 800,
+                            easing: 'ease-out'
+                        });
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function setupFilters() {
+            const statusFilter = document.getElementById('statusFilter');
+            const durationFilter = document.getElementById('durationFilter');
+            const courseCards = document.querySelectorAll('.course-card');
+
+            function applyFilters() {
+                const statusValue = statusFilter.value;
+                const durationValue = durationFilter.value;
+
+                courseCards.forEach(card => {
+                    const status = card.getAttribute('data-status');
+                    const duration = parseInt(card.getAttribute('data-duration') || '0');
+                    let statusMatch = true;
+                    let durationMatch = true;
+
+                    // Apply status filter
+                    if (statusValue !== 'all' && status !== statusValue) {
+                        statusMatch = false;
+                    }
+
+                    // Apply duration filter
+                    if (durationValue !== 'all') {
+                        if (durationValue === 'short' && !(duration >= 1 && duration <= 7)) {
+                            durationMatch = false;
+                        } else if (durationValue === 'medium' && !(duration >= 8 && duration <= 30)) {
+                            durationMatch = false;
+                        } else if (durationValue === 'long' && !(duration > 30)) {
+                            durationMatch = false;
+                        }
+                    }
+
+                    if (statusMatch && durationMatch) {
+                        card.style.display = 'block';
+                        card.animate([
+                            { opacity: 0, transform: 'scale(0.9)' },
+                            { opacity: 1, transform: 'scale(1)' }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-out'
+                        });
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            statusFilter.addEventListener('change', applyFilters);
+            durationFilter.addEventListener('change', applyFilters);
+        }
+
+        function setupSort() {
+            const sortButton = document.getElementById('sortAlpha');
+            let isAscending = true;
+
+            sortButton.addEventListener('click', function() {
+                const coursesGrid = document.getElementById('coursesGrid');
+                const cards = Array.from(coursesGrid.querySelectorAll('.course-card'));
+
+                cards.sort((a, b) => {
+                    const titleA = a.querySelector('.course-title').textContent.toLowerCase();
+                    const titleB = b.querySelector('.course-title').textContent.toLowerCase();
+                    return isAscending ? titleA.localeCompare(titleB) : titleB.localeCompare(titleA);
+                });
+
+                // Animate sort
+                cards.forEach((card, index) => {
+                    card.style.order = index;
+                    card.animate([
+                        { transform: 'translateY(20px)', opacity: 0 },
+                        { transform: 'translateY(0)', opacity: 1 }
+                    ], {
+                        duration: 400,
+                        delay: index * 50,
+                        easing: 'ease-out'
+                    });
+                });
+
+                // Update button text and icon
+                isAscending = !isAscending;
+                const icon = sortButton.querySelector('i');
+                const text = sortButton.querySelector('span') || sortButton;
+
+                if (isAscending) {
+                    icon.className = 'fas fa-sort-alpha-down';
+                    sortButton.innerHTML = '<i class="fas fa-sort-alpha-down"></i> Sort A-Z';
+                } else {
+                    icon.className = 'fas fa-sort-alpha-up';
+                    sortButton.innerHTML = '<i class="fas fa-sort-alpha-up"></i> Sort Z-A';
+                }
+
+                // Pulse animation on button
+                sortButton.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.1)' },
+                    { transform: 'scale(1)' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-out'
+                });
+            });
+        }
+
+        function setupCardHoverEffects() {
+            const cards = document.querySelectorAll('.course-card');
+
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.zIndex = '10';
+                    this.animate([
+                        { transform: 'translateY(0) rotateX(0)' },
+                        { transform: 'translateY(-8px) rotateX(2deg)' }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-out',
+                        fill: 'forwards'
+                    });
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.animate([
+                        { transform: 'translateY(-8px) rotateX(2deg)' },
+                        { transform: 'translateY(0) rotateX(0)' }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-out',
+                        fill: 'forwards'
+                    });
+                });
+            });
+        }
+
+        // Action functions
+        function viewCourseDetails(courseId) {
+            // Show loading animation
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.disabled = true;
+
+            // Simulate API call
+            setTimeout(() => {
+                alert(`Navigating to course details for ID: ${courseId}`);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 800);
+        }
+
+        function quickAccess(courseId) {
+            // Create quick access modal or sidebar
+            alert(`Quick access for course ${courseId}`);
+        }
+
+        function viewMaterials(courseId) {
+            alert(`Viewing materials for course ${courseId}`);
+        }
+
+        function viewExams(courseId) {
+            alert(`Viewing exams for course ${courseId}`);
+        }
+
+        function browseCourses() {
+            alert('Redirecting to courses catalog...');
+        }
+
+        function continueLearning() {
+            alert('Continuing from where you left off...');
+        }
+
+        function upcomingExams() {
+            alert('Showing upcoming exams...');
+        }
+
+        function downloadMaterials() {
+            alert('Preparing materials for download...');
+        }
+
+        function requestSupport() {
+            alert('Opening support chat...');
+        }
+    </script>
+@* } *@
