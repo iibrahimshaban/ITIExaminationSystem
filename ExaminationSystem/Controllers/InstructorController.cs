@@ -118,12 +118,12 @@ namespace ExaminationSystem.Controllers
 
             var examId = await _instructorExamService.CreateExamAsync(userId, model);
 
-            return RedirectToAction("Exams");
+            return RedirectToAction("UnpublishedExams");
         }
 
 
 
-        [HttpPost]
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> AssignExam(InstructorExamDetailsVm model)
@@ -147,6 +147,183 @@ namespace ExaminationSystem.Controllers
             return RedirectToAction("Exams");
         }
 
+        // GET: /Instructor/CreateQuestion?examId=5
+        [HttpGet]
+        public async Task<IActionResult> CreateQuestion(int examId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
+            try
+            {
+                // Verify exam exists and instructor has access
+                var summary = await _instructorExamService.GetExamQuestionsSummaryAsync(examId, userId);
+                if (summary == null)
+                    return NotFound();
+
+                var model = new CreateQuestionVm
+                {
+                    ExamId = examId,
+                    Type = "MCQ",
+                    Points = 1,
+                    Choices = new List<CreateChoiceVm>
+                    {
+                        new CreateChoiceVm { ChoiceLetter = "A" },
+                        new CreateChoiceVm { ChoiceLetter = "B" },
+                        new CreateChoiceVm { ChoiceLetter = "C" },
+                        new CreateChoiceVm { ChoiceLetter = "D" }
+                    }
+                };
+
+                ViewBag.ExamTitle = summary.ExamTitle;
+                return View(model);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+        }
+
+        // POST: /Instructor/CreateQuestion
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateQuestion(CreateQuestionVm model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            // Custom validation based on question type
+            if (model.Type == "MCQ")
+            {
+                if (model.Choices == null || model.Choices.Count != 4)
+                {
+                    ModelState.AddModelError("", "MCQ questions must have exactly 4 choices");
+                }
+                else
+                {
+                    var correctCount = model.Choices.Count(c => c.IsCorrect);
+                    if (correctCount != 1)
+                        ModelState.AddModelError("", "Please select exactly one correct answer");
+
+                    // Validate all choices have text
+                    for (int i = 0; i < model.Choices.Count; i++)
+                    {
+                        if (string.IsNullOrWhiteSpace(model.Choices[i].Body))
+                            ModelState.AddModelError($"Choices[{i}].Body", "Choice text is required");
+                    }
+                }
+            }
+            else if (model.Type == "TrueFalse")
+            {
+                // FIXED: For True/False, clear the Choices list and only validate CorrectAnswer
+                model.Choices = null; // Clear choices for True/False questions
+
+                if (!model.CorrectAnswer.HasValue)
+                    ModelState.AddModelError("CorrectAnswer", "Please select the correct answer");
+
+                // Remove any validation errors related to Choices for True/False questions
+                var choiceErrors = ModelState.Keys.Where(k => k.StartsWith("Choices")).ToList();
+                foreach (var key in choiceErrors)
+                {
+                    ModelState.Remove(key);
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                try
+                {
+                    var summary = await _instructorExamService.GetExamQuestionsSummaryAsync(model.ExamId, userId);
+                    ViewBag.ExamTitle = summary?.ExamTitle;
+                }
+                catch { }
+
+                return View(model);
+            }
+
+            try
+            {
+                await _instructorExamService.AddQuestionAsync(model, userId);
+                TempData["SuccessMessage"] = "Question added successfully!";
+                return RedirectToAction(nameof(ListQuestions), new { examId = model.ExamId });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+
+                try
+                {
+                    var summary = await _instructorExamService.GetExamQuestionsSummaryAsync(model.ExamId, userId);
+                    ViewBag.ExamTitle = summary?.ExamTitle;
+                }
+                catch { }
+
+                return View(model);
+            }
+        }
+
+        // GET: /Instructor/ListQuestions?examId=5
+        [HttpGet]
+        public async Task<IActionResult> ListQuestions(int examId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            try
+            {
+                var summary = await _instructorExamService.GetExamQuestionsSummaryAsync(examId, userId);
+                if (summary == null)
+                    return NotFound();
+
+                var questions = await _instructorExamService.GetExamQuestionsAsync(examId, userId);
+
+                ViewBag.Summary = summary;
+                return View(questions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+        }
+
+
+       
+
+        /// <summary>
+        /// POST: Publish the exam
+        /// /Instructor/Publish
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Publish(int examId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            try
+            {
+                await _instructorExamService.PublishExamAsync(examId, userId);
+                TempData["SuccessMessage"] = "Exam published successfully! It is now visible to students.";
+                return RedirectToAction(nameof(UnpublishedExams));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "You are not authorized to publish this exam.";
+                return RedirectToAction(nameof(UnpublishedExams));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(ListQuestions), new { examId });
+            }
+        }
     }
 }

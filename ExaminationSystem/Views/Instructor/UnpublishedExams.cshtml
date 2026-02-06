@@ -31,7 +31,7 @@
                 <p class="text-muted mb-4">
                     All your exams have been published, or you haven't created any exams yet.
                 </p>
-                <a asp-action="MyCourses" asp-controller="Instructor" class="btn btn-primary">
+                <a asp-action="Index" asp-controller="Instructor" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Go to My Courses
                 </a>
             </div>
@@ -119,7 +119,7 @@
                                     <td class="px-4">
                                         <div class="d-flex gap-2 justify-content-end">
                                             <!-- Add Questions Button -->
-                                            <a href="/Instructor/Questions/Create?examId=@exam.ExamId"
+                                            <a href="/Instructor/CreateQuestion?examId=@exam.ExamId"
                                                class="btn btn-sm btn-outline-primary"
                                                data-bs-toggle="tooltip"
                                                data-bs-placement="top"
