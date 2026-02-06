@@ -42,4 +42,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     // for Sp tables
     public DbSet<CouresExamForInstructor> CouresExamForInstructors { get; set; }
-    }
+
+	//mb
+	public DbSet<StudentExamQuestionRaw> StudentExamQuestionRaw { get; set; }
+
+}
