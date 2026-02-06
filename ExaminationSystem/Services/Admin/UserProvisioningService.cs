@@ -62,71 +62,12 @@ namespace ExaminationSystem.Services.Admin
             {
                 if (role == DefaultRoles.InstructorRole.Name)
                 {
-                    if (!model.BranchId.HasValue || model.SelectedCourseIds == null || !model.SelectedCourseIds.Any())
-                        throw new InvalidOperationException("Instructor must have at least one course.");
-
-                    var instructor = new ExaminationSystem.Entities.Instructor
-                    {
-                        UserId = user.Id,
-                        FirstName = user.Name ?? "instructor",
-                        HireDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                        BranchId = model.BranchId.Value
-                    };
-
-                    _context.Instructors.Add(instructor);
-                    await _context.SaveChangesAsync();
-
-                    foreach (var courseId in model.SelectedCourseIds)
-                    {
-                        _context.CourseInstructors.Add(new CourseInstructor
-                        {
-                            CourseId = courseId,
-                            InstructorId = instructor.Id,
-                            Role="Teaching",
-                            AssignedAt = DateOnly.FromDateTime(DateTime.UtcNow)
-                        });
-                    }
+                    await CreateInstructorProfileAsync(user, model.InstructorDetails);
                 }
                 else if (role == DefaultRoles.StudentRole.Name)
                 {
-                    if (!model.BranchId.HasValue || !model.TrackId.HasValue)
-                        throw new InvalidOperationException("Student must have Branch and Track.");
-
-                    // 1️⃣ Create Student
-                    var student = new Student
-                    {
-                        UserId = user.Id,
-                        BranchId = model.BranchId.Value,
-                        TrackId = model.TrackId.Value,
-                        FirstName=model.Name,
-                        EnrollmentDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                        Status = "Active"
-                    };
-
-                    _context.Students.Add(student);
-                    await _context.SaveChangesAsync(); // get Student.Id
-
-                    // 2️⃣ Get all active courses for the selected track
-                    var trackCourses = await _context.Courses
-                        .Where(c =>
-                            c.IsActive &&
-                            c.TrackId == model.TrackId.Value)
-                        .Select(c => c.Id)
-                        .ToListAsync();
-
-                    // 3️⃣ Enroll student in all track courses
-                    foreach (var courseId in trackCourses)
-                    {
-                        _context.StudentCourses.Add(new StudentCourse
-                        {
-                            StudentId = student.Id,
-                            CourseId = courseId,
-                            StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                            Status = "Enrolled"
-                        });
-                    }
+                    await CreateStudentProfileAsync(user, model.StudentDetails);
                 }
-
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -135,6 +76,93 @@ namespace ExaminationSystem.Services.Admin
             {
                 await transaction.RollbackAsync();
                 throw;
+            }
+        }
+
+        // ===================== PRIVATE HELPERS =====================
+
+        private async Task CreateInstructorProfileAsync(ApplicationUser user, InstructorDetailsVm? details)
+        {
+            if (details == null)
+                throw new InvalidOperationException("Instructor details cannot be null.");
+
+            if (!details.BranchId.HasValue)
+                throw new InvalidOperationException("Instructor must have a branch assigned.");
+
+            if (details.SelectedCourseIds == null || !details.SelectedCourseIds.Any())
+                throw new InvalidOperationException("Instructor must have at least one course assigned.");
+
+            var instructor = new ExaminationSystem.Entities.Instructor
+            {
+                UserId = user.Id,
+                FirstName = user.Name ?? "Instructor",
+                HireDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                BranchId = details.BranchId.Value
+            };
+
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync(); // Get Instructor.Id
+
+            foreach (var courseId in details.SelectedCourseIds)
+            {
+                _context.CourseInstructors.Add(new CourseInstructor
+                {
+                    CourseId = courseId,
+                    InstructorId = instructor.Id,
+                    Role = "Teaching",
+                    AssignedAt = DateOnly.FromDateTime(DateTime.UtcNow)
+                });
+            }
+        }
+
+        private async Task CreateStudentProfileAsync(ApplicationUser user, StudentDetailsVm? details)
+        {
+            if (details == null)
+                throw new InvalidOperationException("Student details cannot be null.");
+
+            if (!details.BranchId.HasValue)
+                throw new InvalidOperationException("Student must have a branch assigned.");
+
+            if (!details.TrackId.HasValue)
+                throw new InvalidOperationException("Student must have a track assigned.");
+
+            // 1️⃣ Create Student entity
+            var student = new Student
+            {
+                UserId = user.Id,
+                BranchId = details.BranchId.Value,
+                TrackId = details.TrackId.Value,
+                FirstName = user.Name ?? "Student",
+                EnrollmentDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                Status = "Active"
+            };
+
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync(); // Get Student.Id
+
+            // 2️⃣ Get all active courses for the selected track
+            var trackCourses = await _context.Courses
+                .Where(c => c.IsActive && c.TrackId == details.TrackId.Value)
+                .Select(c => c.Id)
+                .ToListAsync();
+
+            if (!trackCourses.Any())
+            {
+                // Optional: You might want to allow students without courses
+                // or throw an exception if courses are mandatory
+                // throw new InvalidOperationException("No active courses found for the selected track.");
+            }
+
+            // 3️⃣ Enroll student in all track courses
+            foreach (var courseId in trackCourses)
+            {
+                _context.StudentCourses.Add(new StudentCourse
+                {
+                    StudentId = student.Id,
+                    CourseId = courseId,
+                    StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    Status = "Enrolled"
+                });
             }
         }
     }

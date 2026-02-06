@@ -1,7 +1,4 @@
-﻿
-
-
-@model List<ExaminationSystem.ViewModel.InstructorAvailableExamVm>
+﻿@model List<ExaminationSystem.ViewModel.InstructorAvailableExamVm>
 
 @{
     ViewData["Title"] = "Available Exams";
@@ -60,6 +57,8 @@
                                     <th scope="col" class="text-center">Total Questions</th>
                                     <th scope="col" class="text-center">MCQ</th>
                                     <th scope="col" class="text-center">True/False</th>
+                                    <th scope="col" class="text-center">Assign Exam</th>
+                                    <th scope="col" class="text-center">Show Questions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -74,11 +73,8 @@
                                         </td>
                                         <td>
                                             <i class="bi bi-file-text me-2" style="color: #456882;"></i>
-                                            <a asp-action="ExamDetails"asp-controller="Instructor"asp-route-id="@exam.ExamId"
-                                                class="text-decoration-none fw-semibold"style="color:#1B3C53;"> @exam.ExamTitle
-                                            </a>
+                                            <span class="fw-semibold" style="color:#1B3C53;">@exam.ExamTitle</span>
                                         </td>
-
                                         <td class="text-center">
                                             <span class="badge" style="background-color: #D2C1B6; color: #1B3C53;">
                                                 <i class="bi bi-clock me-1"></i>
@@ -93,6 +89,24 @@
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-success">@exam.TF_Count</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a asp-action="ExamDetails"
+                                               asp-controller="Instructor"
+                                               asp-route-id="@exam.ExamId"
+                                               class="btn btn-sm btn-primary">
+                                                <i class="bi bi-plus-circle me-1"></i>
+                                                Assign 
+                                            </a>
+                                        </td>
+                                        <td class="text-center">
+                                            <a asp-action="ListQuestions"
+                                               asp-controller="Instructor"
+                                               asp-route-examId="@exam.ExamId"
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-list-ul me-1"></i>
+                                                View
+                                            </a>
                                         </td>
                                     </tr>
                                 }
@@ -148,10 +162,10 @@
         transition: transform 0.2s;
     }
 
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
 
     .table thead th {
         font-weight: 600;
@@ -165,13 +179,24 @@
         transition: background-color 0.2s;
     }
 
-    .table tbody tr:hover {
-        background-color: #F9F3EF;
-    }
+        .table tbody tr:hover {
+            background-color: #F9F3EF;
+        }
 
     .badge {
         font-weight: 500;
         padding: 0.4rem 0.8rem;
     }
-</style>
 
+    .btn-sm {
+        padding: 2px;
+        font-size: 0.85rem;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+        .btn-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+</style>

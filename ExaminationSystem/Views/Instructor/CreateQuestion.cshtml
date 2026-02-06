@@ -1,0 +1,337 @@
+﻿
+
+@model CreateQuestionVm
+
+@{
+    ViewData["Title"] = "Create Question";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var examTitle = ViewBag.ExamTitle as string ?? "Exam";
+}
+
+
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" asp-controller="Instructor">
+                    <i class="bi bi-house-door me-1"></i>Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="UnpublishedExams" asp-controller="Instructor">Unpublished Exams</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="ListQuestions" asp-controller="Instructor" asp-route-examId="@Model.ExamId">
+                    Questions
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Create Question</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h2 class="mb-2">
+            <i class="bi bi-plus-circle text-primary me-2"></i>Create Question
+        </h2>
+        <p class="text-muted mb-0">
+            <i class="bi bi-book me-1"></i>Exam: <strong>@examTitle</strong>
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle text-primary me-2"></i>Question Details
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="CreateQuestion" method="post" id="questionForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ExamId" />
+
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Question Type -->
+                        <div class="mb-4">
+                            <label asp-for="Type" class="form-label fw-semibold">
+                                <i class="bi bi-list-ul me-1"></i>Question Type
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Type" class="form-select" id="questionType">
+                                <option value="MCQ">Multiple Choice (MCQ)</option>
+                                <option value="TrueFalse">True/False</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Question Body -->
+                        <div class="mb-4">
+                            <label asp-for="Body" class="form-label fw-semibold">
+                                <i class="bi bi-chat-left-text me-1"></i>Question Text
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Body" class="form-control" rows="4" 
+                                      placeholder="Enter the question here..."></textarea>
+                            <span asp-validation-for="Body" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Points -->
+                        <div class="mb-4">
+                            <label asp-for="Points" class="form-label fw-semibold">
+                                <i class="bi bi-trophy me-1"></i>Points
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Points" type="number" min="1" max="100" class="form-control" 
+                                   style="max-width: 200px;" />
+                            <span asp-validation-for="Points" class="text-danger small"></span>
+                        </div>
+
+                        <!-- MCQ Choices Section -->
+                        <div id="mcqSection" class="mb-4">
+                            <label class="form-label fw-semibold mb-3">
+                                <i class="bi bi-check2-square me-1"></i>Answer Choices
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="alert alert-info mb-3" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Enter 4 choices and select the correct answer using the radio button
+                            </div>
+
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                var letter = new[] { "A", "B", "C", "D" }[i];
+                                <div class="card mb-3 choice-card">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <div class="form-check">
+                                                    <input type="radio" 
+                                                           name="correctChoice" 
+                                                           class="form-check-input correct-radio" 
+                                                           id="correct_@letter"
+                                                           data-index="@i"
+                                                           @(Model.Choices != null && Model.Choices.Count > i && Model.Choices[i].IsCorrect ? "checked" : "") />
+                                                    <label class="form-check-label fw-bold" for="correct_@letter">
+                                                        Correct
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <span class="badge bg-primary choice-letter">@letter</span>
+                                            </div>
+                                            <div class="col">
+                                                <input type="hidden" name="Choices[@i].ChoiceLetter" value="@letter" class="choice-letter-input" />
+                                                <input type="hidden" name="Choices[@i].IsCorrect" class="is-correct-input" value="@(Model.Choices != null && Model.Choices.Count > i && Model.Choices[i].IsCorrect ? "true" : "false")" />
+                                                <input type="text" 
+                                                       name="Choices[@i].Body" 
+                                                       class="form-control choice-body-input" 
+                                                       placeholder="Enter choice @letter text"
+                                                       value="@(Model.Choices != null && Model.Choices.Count > i ? Model.Choices[i].Body : "")" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- True/False Section -->
+                        <div id="trueFalseSection" class="mb-4" style="display: none;">
+                            <label class="form-label fw-semibold mb-3">
+                                <i class="bi bi-toggle-on me-1"></i>Correct Answer
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check p-3 border rounded @(Model.CorrectAnswer == true ? "border-success bg-success bg-opacity-10" : "")">
+                                                <input class="form-check-input" type="radio" name="CorrectAnswer" 
+                                                       id="answerTrue" value="true" @(Model.CorrectAnswer == true ? "checked" : "") />
+                                                <label class="form-check-label fw-semibold" for="answerTrue">
+                                                    <i class="bi bi-check-circle text-success me-2"></i>True
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check p-3 border rounded @(Model.CorrectAnswer == false ? "border-danger bg-danger bg-opacity-10" : "")">
+                                                <input class="form-check-input" type="radio" name="CorrectAnswer" 
+                                                       id="answerFalse" value="false" @(Model.CorrectAnswer == false ? "checked" : "") />
+                                                <label class="form-check-label fw-semibold" for="answerFalse">
+                                                    <i class="bi bi-x-circle text-danger me-2"></i>False
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="CorrectAnswer" class="text-danger small d-block mt-2"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+                            <a asp-action="ListQuestions" asp-controller="Instructor" asp-route-examId="@Model.ExamId" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Save Question
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <style>
+        :root {
+            --primary-color: #1B3C53;
+            --secondary-color: #456882;
+            --accent-color: #D2C1B6;
+            --background-color: #F9F3EF;
+        }
+
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-outline-secondary {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: #fff;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--secondary-color);
+        }
+
+        .choice-card {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .choice-card:hover {
+            border-color: var(--accent-color);
+        }
+
+        .choice-letter {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+    </style>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const questionType = document.getElementById('questionType');
+            const mcqSection = document.getElementById('mcqSection');
+            const trueFalseSection = document.getElementById('trueFalseSection');
+            const correctRadios = document.querySelectorAll('.correct-radio');
+            const isCorrectInputs = document.querySelectorAll('.is-correct-input');
+            const choiceBodyInputs = document.querySelectorAll('.choice-body-input');
+            const choiceLetterInputs = document.querySelectorAll('.choice-letter-input');
+
+            // Toggle sections based on question type
+            function toggleSections() {
+                if (questionType.value === 'MCQ') {
+                    mcqSection.style.display = 'block';
+                    trueFalseSection.style.display = 'none';
+                    
+                    // Enable MCQ inputs
+                    choiceBodyInputs.forEach(input => input.disabled = false);
+                    choiceLetterInputs.forEach(input => input.disabled = false);
+                    isCorrectInputs.forEach(input => input.disabled = false);
+                } else {
+                    mcqSection.style.display = 'none';
+                    trueFalseSection.style.display = 'block';
+                    
+                    // CRITICAL FIX: Disable MCQ inputs so they don't get submitted
+                    choiceBodyInputs.forEach(input => {
+                        input.disabled = true;
+                        input.value = ''; // Clear value
+                    });
+                    choiceLetterInputs.forEach(input => input.disabled = true);
+                    isCorrectInputs.forEach(input => input.disabled = true);
+                }
+            }
+
+            questionType.addEventListener('change', toggleSections);
+            toggleSections();
+
+            // Handle correct answer selection for MCQ
+            correctRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Reset all IsCorrect inputs to false
+                    isCorrectInputs.forEach(input => {
+                        input.value = 'false';
+                    });
+                    
+                    // Set the selected one to true
+                    const index = this.getAttribute('data-index');
+                    isCorrectInputs[index].value = 'true';
+                });
+            });
+
+            // Before form submit, ensure disabled fields don't get sent
+            document.getElementById('questionForm').addEventListener('submit', function(e) {
+                if (questionType.value === 'TrueFalse') {
+                    // Remove all choice inputs from the form for True/False
+                    choiceBodyInputs.forEach(input => input.remove());
+                    choiceLetterInputs.forEach(input => input.remove());
+                    isCorrectInputs.forEach(input => input.remove());
+                }
+            });
+        });
+    </script>
+}

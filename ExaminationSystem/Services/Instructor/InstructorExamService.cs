@@ -16,6 +16,70 @@ namespace ExaminationSystem.Services.Instructor
             _context = context;
         }
 
+        
+
+        /// <summary>
+        /// Publishes an exam after validating requirements
+        /// </summary>
+        public async Task PublishExamAsync(int examId, string instructorUserId)
+        {
+            // 1. Validate instructor owns the exam
+            var exam = await _context.Exams
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.CourseInstructors)
+                .Include(e => e.Questions.Where(q => q.IsActive))
+                .FirstOrDefaultAsync(e => e.Id == examId);
+
+            if (exam == null)
+                throw new InvalidOperationException("Exam not found");
+
+           
+            // 2. Check if already published
+            if (exam.IsPublished)
+                throw new InvalidOperationException("This exam is already published");
+
+            // 3. Validate question requirements
+            var mcqCount = exam.Questions.Count(q => q.Type == "MCQ");
+            var trueFalseCount = exam.Questions.Count(q => q.Type == "TrueFalse");
+
+            if (mcqCount < 7)
+                throw new InvalidOperationException($"Cannot publish exam. Minimum 7 MCQ questions required (current: {mcqCount})");
+
+            if (trueFalseCount < 3)
+                throw new InvalidOperationException($"Cannot publish exam. Minimum 3 True/False questions required (current: {trueFalseCount})");
+
+            // 4. Validate that all MCQ questions have exactly 4 choices with one correct answer
+            var mcqQuestions = exam.Questions.Where(q => q.Type == "MCQ").ToList();
+            foreach (var question in mcqQuestions)
+            {
+                var choices = await _context.Choices
+                    .Where(c => c.QuestionId == question.Id)
+                    .ToListAsync();
+
+                if (choices.Count != 4)
+                    throw new InvalidOperationException($"Question '{question.Body.Substring(0, Math.Min(50, question.Body.Length))}...' must have exactly 4 choices");
+
+                var correctChoicesCount = choices.Count(c => c.IsCorrect);
+                if (correctChoicesCount != 1)
+                    throw new InvalidOperationException($"Question '{question.Body.Substring(0, Math.Min(50, question.Body.Length))}...' must have exactly one correct answer");
+            }
+
+            // 5. Validate that all True/False questions have a correct answer
+            var trueFalseQuestions = exam.Questions.Where(q => q.Type == "TrueFalse").ToList();
+            foreach (var question in trueFalseQuestions)
+            {
+                if (!question.CorrectAnswer.HasValue)
+                    throw new InvalidOperationException($"True/False question '{question.Body.Substring(0, Math.Min(50, question.Body.Length))}...' must have a correct answer");
+            }
+
+            // 6. Publish the exam
+            exam.IsPublished = true;
+
+            // Optional: Set publish date if you have that field
+            // exam.PublishedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
         public async Task<List<InstructorExamVm>> GetUnpublishedExamsAsync(string instructorUserId)
         {
             var instructorId = await _context.Instructors
@@ -183,7 +247,154 @@ namespace ExaminationSystem.Services.Instructor
             };
         }
 
+        public async Task AddQuestionAsync(CreateQuestionVm model, string instructorUserId)
+        {
+            // 1. Validate that the exam exists and belongs to the instructor
+            var exam = await _context.Exams
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.CourseInstructors)
+                .FirstOrDefaultAsync(e => e.Id == model.ExamId);
 
+            if (exam == null)
+                throw new InvalidOperationException("Exam not found");
+
+            //var isInstructor = exam.Course.CourseInstructors
+            //    .Any(ci => ci.InstructorId == instructorUserId);
+
+            //if (!isInstructor)
+            //    throw new UnauthorizedAccessException("You are not authorized to add questions to this exam");
+
+            // 2. Validate question type
+            if (model.Type != "MCQ" && model.Type != "TrueFalse")
+                throw new InvalidOperationException("Invalid question type");
+
+            // 3. Validate MCQ-specific rules
+            if (model.Type == "MCQ")
+            {
+                if (model.Choices == null || model.Choices.Count != 4)
+                    throw new InvalidOperationException("MCQ questions must have exactly 4 choices");
+
+                var correctChoicesCount = model.Choices.Count(c => c.IsCorrect);
+                if (correctChoicesCount != 1)
+                    throw new InvalidOperationException("MCQ questions must have exactly one correct answer");
+
+                // Validate choice letters
+                var expectedLetters = new[] { "A", "B", "C", "D" };
+                var providedLetters = model.Choices.Select(c => c.ChoiceLetter).OrderBy(l => l).ToArray();
+                if (!expectedLetters.SequenceEqual(providedLetters))
+                    throw new InvalidOperationException("MCQ choices must have letters A, B, C, D");
+            }
+
+            // 4. Validate True/False rules
+            if (model.Type == "TrueFalse")
+            {
+                if (!model.CorrectAnswer.HasValue)
+                    throw new InvalidOperationException("True/False questions must have a correct answer");
+            }
+
+            // 5. Create the Question entity
+            var question = new Question
+            {
+                ExamId = model.ExamId,
+                Body = model.Body,
+                Type = model.Type,
+                Points = model.Points,
+                IsActive = true,
+                CorrectAnswer = model.Type == "TrueFalse" ? model.CorrectAnswer : null
+            };
+
+            _context.Questions.Add(question);
+            await _context.SaveChangesAsync();
+
+            // 6. Create Choices if MCQ
+            if (model.Type == "MCQ" && model.Choices != null)
+            {
+                var choices = model.Choices.Select((choice, index) => new Choice
+                {
+                    QuestionId = question.Id,
+                    Body = choice.Body,
+                    ChoiceLetter = choice.ChoiceLetter,
+                    DisplayOrder = Array.IndexOf(new[] { "A", "B", "C", "D" }, choice.ChoiceLetter) + 1,
+                    IsCorrect = choice.IsCorrect
+                }).ToList();
+
+                _context.Choices.AddRange(choices);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<ExamQuestionsSummaryVm?> GetExamQuestionsSummaryAsync(int examId, string instructorUserId)
+        {
+            // Validate instructor owns the exam
+            var exam = await _context.Exams
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.CourseInstructors)
+                .Include(e => e.Questions.Where(q => q.IsActive))
+                .FirstOrDefaultAsync(e => e.Id == examId);
+
+            if (exam == null)
+                return null;
+
+            //var isInstructor = exam.Course.CourseInstructors
+            //    .Any(ci => ci.InstructorId == instructorUserId);
+
+            //if (!isInstructor)
+            //    throw new UnauthorizedAccessException("You are not authorized to view this exam");
+
+            var mcqCount = exam.Questions.Count(q => q.Type == "MCQ");
+            var trueFalseCount = exam.Questions.Count(q => q.Type == "TrueFalse");
+
+            return new ExamQuestionsSummaryVm
+            {
+                ExamId = exam.Id,
+                ExamTitle = exam.Title,
+                MCQCount = mcqCount,
+                TrueFalseCount = trueFalseCount
+            };
+        }
+
+        public async Task<List<QuestionListVm>> GetExamQuestionsAsync(int examId, string instructorUserId)
+        {
+            // Validate instructor owns the exam
+            var exam = await _context.Exams
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.CourseInstructors)
+                .FirstOrDefaultAsync(e => e.Id == examId);
+
+            if (exam == null)
+                throw new InvalidOperationException("Exam not found");
+
+            //var isInstructor = exam.Course.CourseInstructors
+            //    .Any(ci => ci.InstructorId == instructorUserId);
+
+            //if (!isInstructor)
+            //    throw new UnauthorizedAccessException("You are not authorized to view this exam");
+
+            // Get all active questions with choices
+            var questions = await _context.Questions
+                .Where(q => q.ExamId == examId && q.IsActive)
+                .Include(q => q.Choices)
+                .OrderBy(q => q.Id)
+                .Select(q => new QuestionListVm
+                {
+                    Id = q.Id,
+                    Body = q.Body,
+                    Type = q.Type,
+                    Points = q.Points ?? 0,
+                    CorrectAnswer = q.CorrectAnswer,
+                    Choices = q.Choices
+                        .OrderBy(c => c.DisplayOrder)
+                        .Select(c => new ChoiceDisplayVm
+                        {
+                            ChoiceLetter = c.ChoiceLetter ?? "",
+                            Body = c.Body,
+                            IsCorrect = c.IsCorrect
+                        }).ToList()
+                })
+                .ToListAsync();
+
+            return questions;
+        }
 
     }
 }
