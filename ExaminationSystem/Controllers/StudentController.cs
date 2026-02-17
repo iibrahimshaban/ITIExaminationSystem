@@ -19,7 +19,8 @@ namespace ExaminationSystem.Web.Controllers
 		public async Task<IActionResult> Index()
 		{
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			return View(await _studentService.GetStudentByUserIdAsync(userId!));
+			var s = await _studentService.GetStudentByUserIdAsync(userId!);
+			return View(s);
 		}
 
 		public async Task<IActionResult> Courses()

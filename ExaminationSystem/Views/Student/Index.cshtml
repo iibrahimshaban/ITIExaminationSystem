@@ -8,7 +8,7 @@
                 <div class="avatar-section">
                     <div class="avatar-circle">
                         <span class="avatar-initials">@Model.FirstName[0]@Model.LastName[0]</span>
-                        @if (Model.Gender.HasValue)
+                        @if (Model?.Gender.HasValue==true)
                         {
                             <div class="gender-indicator @(Model.Gender.Value ? "male" : "female")">
                                 <i class="fas @(Model.Gender.Value ? "fa-mars" : "fa-venus")"></i>
