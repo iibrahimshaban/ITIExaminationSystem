@@ -54,20 +54,35 @@ namespace ExaminationSystem.Controllers
         /// <summary>
         /// Displays all available exams for courses taught by the logged-in instructor
         /// </summary>
+        // GET: /Instructor/Exams
         [HttpGet]
         public async Task<IActionResult> Exams()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Login", "Account");
             }
 
             var availableExams = await _instructorExamService.GetAvailableExamsAsync(userId);
-
             return View(availableExams);
         }
+
+        // GET: /Instructor/ExamDetails/5
+        [HttpGet]
+        public async Task<IActionResult> ExamDetails(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var exam = await _instructorExamService.GetExamDetailsAsync(userId, id);
+            if (exam == null)
+                return NotFound();
+
+            return View(exam);
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> UnpublishedExams()
@@ -81,20 +96,79 @@ namespace ExaminationSystem.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<IActionResult> ExamDetails( int id)
+        // POST: /Instructor/AssignExam
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignExam(InstructorExamDetailsVm model)
         {
+            // 1️⃣ Get logged-in user
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var exam = await _instructorExamService.GetExamDetailsAsync(userId, id);
+            // 2️⃣ Model validation
+            if (!ModelState.IsValid)
+            {
+                return View("ExamDetails", model);
+            }
 
-            if (exam == null)
-                return NotFound();
+            // 3️⃣ Business validation
+            if (model.NumberOfMCQ <= 0 && model.NumberOfTrueFalse <= 0)
+            {
+                ModelState.AddModelError("", "You must assign at least one question (MCQ or True/False).");
+                return View("ExamDetails", model);
+            }
 
-            return View(exam);
+            if (model.MaxStudents <= 0)
+            {
+                ModelState.AddModelError("MaxStudents", "Maximum students must be greater than 0.");
+                return View("ExamDetails", model);
+            }
+
+            try
+            {
+                // 4️⃣ Call service
+                var result = await _instructorExamService.GenerateAndAssignRandomExamAsync(
+                    model.ExamId,
+                    model.NumberOfMCQ,
+                    model.NumberOfTrueFalse,
+                    userId,
+                    model.MaxStudents
+                );
+
+                // 5️⃣ Handle service failure
+                if (result == null || result.IsFailur)
+                {
+                    ModelState.AddModelError("", "No students were assigned.");
+                    return View("ExamDetails", model);
+                }
+
+                // 6️⃣ Success message
+                TempData["SuccessMessage"] =
+                    $"Exam assigned successfully to {result.Value.StudentsProcessed} students.";
+
+                return RedirectToAction(nameof(Exams));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                TempData["ErrorMessage"] = "You are not authorized to assign this exam.";
+                return RedirectToAction(nameof(Exams));
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View("ExamDetails", model);
+            }
+            catch (Exception)
+            {
+                // TODO: log exception
+                TempData["ErrorMessage"] =
+                    "An unexpected error occurred while assigning the exam. Please try again.";
+
+                return RedirectToAction(nameof(Exams));
+            }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Create([FromQuery]int courseId)
@@ -124,28 +198,7 @@ namespace ExaminationSystem.Controllers
 
 
 
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> AssignExam(InstructorExamDetailsVm model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View("ExamDetails", model);
-            }
-
-            var result = await _instructorExamService.GenerateAndAssignRandomExamAsync( model.ExamId,model.NumberOfMCQ,model.NumberOfTrueFalse, model.MaxStudents);
-
-            if (result.IsFailur)
-            {
-                ModelState.AddModelError("", "No students were assigned.");
-                return View("ExamDetails", model);
-            }
-
-            TempData["Success"] =
-                $"Assigned exam to {result.Value.StudentsProcessed} students.";
-
-            return RedirectToAction("Exams");
-        }
+      
 
         // GET: /Instructor/CreateQuestion?examId=5
         [HttpGet]

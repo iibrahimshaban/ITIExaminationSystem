@@ -56,7 +56,7 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                            <i class="bi bi-list-check text-primary fs-1"></i>
+                            <i class="bi bi-list-check iconecolor fs-1"></i>
                         </div>
                         <h3 class="mb-2 fw-bold @(summary.MCQCount >= 7 ? "text-success" : "text-warning")">
                             @summary.MCQCount
@@ -85,7 +85,7 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                            <i class="bi bi-toggle-on text-primary fs-1"></i>
+                            <i class="bi bi-toggle-on iconecolor fs-1"></i>
                         </div>
                         <h3 class="mb-2 fw-bold @(summary.TrueFalseCount >= 3 ? "text-success" : "text-warning")">
                             @summary.TrueFalseCount
@@ -114,7 +114,7 @@
                 <div class="card border-0 shadow-sm h-100 @(summary.CanPublish ? "bg-success bg-opacity-10" : "bg-light")">
                     <div class="card-body text-center">
                         <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                            <i class="bi bi-@(summary.CanPublish ? "check-circle" : "lock") text-primary fs-1"></i>
+                            <i class="bi bi-@(summary.CanPublish ? "check-circle iconecolor" : "lock") text-primary fs-1"></i>
                         </div>
                         <h3 class="mb-2 fw-bold @(summary.CanPublish ? "text-success" : "text-muted")">
                             @(summary.CanPublish ? "Ready" : "Not Ready")
@@ -122,10 +122,14 @@
                         <p class="text-muted mb-2">Publish Status</p>
                         @if (summary.CanPublish)
                         {
-                            <a asp-action="Publish" asp-controller="Instructor" asp-route-examId="@summary.ExamId"
-                               class="btn btn-success btn-sm mt-2">
-                                <i class="bi bi-check-circle me-1"></i>Publish Exam
-                            </a>
+                            <form asp-action="Publish" asp-controller="Instructor" method="post" class="d-inline">
+                                <input type="hidden" name="examId" value="@summary.ExamId" />
+
+                                <button type="submit" class="btn btn-success btn-sm mt-2">
+                                    <i class="bi bi-check-circle iconecolor me-1"></i>
+                                    Publish Exam
+                                </button>
+                            </form>
                         }
                         else
                         {
@@ -254,11 +258,11 @@
         }
 
         .bg-primary {
-            background-color: var(--primary-color) !important;
+            background-color: var(--primary-color) ;
         }
 
         .text-primary {
-            color: var(--primary-color) !important;
+            color: var(--primary-color) ;
         }
 
         .btn-primary {
@@ -293,11 +297,11 @@
             }
 
         .bg-secondary {
-            background-color: var(--secondary-color) !important;
+            background-color: var(--secondary-color) ;
         }
 
         .badge.bg-secondary {
-            background-color: var(--secondary-color) !important;
+            background-color: var(--secondary-color);
         }
 
         .question-item {
@@ -328,5 +332,10 @@
         .card {
             border-radius: 0.5rem;
         }
+
+        .iconecolor{
+          color: white !important;
+        }
+
     </style>
 

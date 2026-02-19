@@ -187,19 +187,22 @@ namespace ExaminationSystem.Services.Instructor
        int examId,
        int numberOfMCQ,
        int numberOfTrueFalse,
+       string? userId,
        int maxStudents = 20,
        CancellationToken cancellationToken = default)
         {
             var results = await _context.Set<ExamAssignmentResultVm>()
                 .FromSqlRaw(
-                    "EXEC dbo.AssignRandomQuestionsToAllStudents @ExamId, @MCQCount, @TrueFalseCount, @MaxStudents",
+                    "EXEC dbo.AssignRandomQuestionsToAllStudents @ExamId, @MCQCount, @TrueFalseCount,@userId,@MaxStudents",
                     new SqlParameter("@ExamId", examId),
                     new SqlParameter("@MCQCount", numberOfMCQ),
                     new SqlParameter("@TrueFalseCount", numberOfTrueFalse),
+                    new SqlParameter("@userId", userId),
                     new SqlParameter("@MaxStudents", maxStudents)
+
                 )
                 .AsNoTracking()
-                .ToListAsync(cancellationToken);   // ✅ MATERIALIZE HERE
+                .ToListAsync(cancellationToken);  
 
             var result = results.FirstOrDefault();
 
