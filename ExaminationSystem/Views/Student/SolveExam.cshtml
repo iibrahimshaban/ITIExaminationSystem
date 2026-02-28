@@ -1,0 +1,164 @@
+﻿@model ExaminationSystem.ViewModel.SolveExamVM
+
+<form asp-action="SubmitExam" method="post" id="examForm" class="exam-form">
+    <input type="hidden" name="ExamId" value="@Model.ExamId" />
+    <input type="hidden" id="timeSpent" name="duration" value="0" />
+
+    <div class="exam-container">
+
+        <h1>@Model.ExamTitle</h1>
+        <p>Duration: @Model.DurationInMinutes minutes</p>
+
+        <div id="timer" style="font-size:18px;font-weight:bold;color:#c0392b">
+            Time Left: <span id="timeRemaining"></span>
+        </div>
+
+        <hr />
+
+        @for (int i = 0; i < Model.Questions.Count; i++)
+        {
+            var q = Model.Questions[i];
+
+            <div class="question-box" id="question-@(i + 1)">
+                <h4>Question @(i + 1)</h4>
+                <p>@q.Body</p>
+
+                @* ========== MCQ ========== *@
+                @if (q.Type == "MCQ" && q.Choices?.Any() == true)
+                {
+                    foreach (var c in q.Choices)
+                    {
+                        <div>
+                            <label>
+                                <input type="radio"
+                                       name="Answers[@q.QuestionId]"
+                                       value="@c.ChoiceId"
+                                       onchange="markAnswered(@q.QuestionId)" />
+                                @c.Body
+                            </label>
+                        </div>
+                    }
+                }
+
+                @* ========== TRUE / FALSE ========== *@
+                else if (q.Type == "TrueFalse")
+                {
+                    <div>
+                        <label>
+                            <input type="radio"
+                                   name="Answers[@q.QuestionId]"
+                                   value="true"
+                                   onchange="markAnswered(@q.QuestionId)" />
+                            True
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="radio"
+                                   name="Answers[@q.QuestionId]"
+                                   value="false"
+                                   onchange="markAnswered(@q.QuestionId)" />
+                            False
+                        </label>
+                    </div>
+                }
+
+                @* ========== NO OPTIONS ========== *@
+                else
+                {
+                    <p style="color:red">⚠️ Question has no options.</p>
+                }
+            </div>
+
+            <hr />
+        }
+
+        <button type="submit"
+                class="btn btn-success"
+                onclick="return validateBeforeSubmit()">
+            Submit Exam
+        </button>
+    </div>
+</form>
+
+<script>
+    // ================= TIMER =================
+    let totalSeconds = @Model.DurationInMinutes * 60;
+    let spent = 0;
+    const timerEl = document.getElementById("timeRemaining");
+    const timeInput = document.getElementById("timeSpent");
+
+    const timer = setInterval(() => {
+        totalSeconds--;
+        spent++;
+
+        timeInput.value = spent;
+
+        let min = Math.floor(totalSeconds / 60);
+        let sec = totalSeconds % 60;
+        timerEl.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+
+        if (totalSeconds <= 0) {
+            clearInterval(timer);
+            alert("⏰ Time is up. Exam will be submitted.");
+            document.getElementById("examForm").submit();
+        }
+    }, 1000);
+
+    // ================= ANSWERS TRACKING =================
+    const answered = new Set();
+
+    function markAnswered(questionId) {
+        answered.add(questionId);
+    }
+
+    // ================= VALIDATION =================
+    function validateBeforeSubmit() {
+        if (answered.size === 0) {
+            alert("❗ You must answer at least one question before submitting.");
+            return false;
+        }
+
+        const total = @Model.Questions.Count;
+        const unanswered = total - answered.size;
+
+        if (unanswered > 0) {
+            return confirm(
+                `You still have ${unanswered} unanswered question(s).\nAre you sure you want to submit?`
+            );
+        }
+
+        return true;
+    }
+</script>
+
+<style>
+    body {
+        font-family: Segoe UI, Tahoma;
+        background: #f4f6f9;
+    }
+
+    .exam-container {
+        max-width: 900px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+    }
+
+    .question-box {
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 6px;
+    }
+
+        .question-box h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+    button {
+        padding: 12px 30px;
+        font-size: 16px;
+    }
+</style>

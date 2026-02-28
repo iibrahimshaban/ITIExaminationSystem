@@ -32,22 +32,11 @@
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
-        <div class="form-options">
-            <div class="remember-me">
-                <input asp-for="RememberMe" class="checkbox" />
-                <label asp-for="RememberMe" class="checkbox-label"></label>
-            </div>
-
-            <a asp-action="ForgotPassword" class="forgot-link">Forgot password?</a>
-        </div>
+        
 
         <button type="submit" class="login-button">Login</button>
     </form>
 
-  @*   <p class="footer-text">
-        Don't have an account?
-        <a asp-action="Register" class="signup-link">Sign up</a>
-    </p> *@
 </div>
 
 @section Scripts {

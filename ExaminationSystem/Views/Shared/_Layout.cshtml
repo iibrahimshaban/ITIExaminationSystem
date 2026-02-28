@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Inst.css" asp-append-version="true" />
+
+
 </head>
 <body>
 
@@ -107,6 +109,6 @@
     <script src="~/js/admin.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
-
+    @await Html.PartialAsync("_Toast")
 </body>
 </html>

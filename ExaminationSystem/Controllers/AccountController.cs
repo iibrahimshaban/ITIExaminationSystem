@@ -112,7 +112,6 @@ namespace ExaminationSystem.Controllers
         #region Register
 
         [HttpGet]
-        // [Authorize(Roles = "Admin")]
         public IActionResult Register(string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -122,18 +121,25 @@ namespace ExaminationSystem.Controllers
                 RedirectUrl = returnUrl,
                 RoleList = _userProvisioningService.GetRoles(),
                 BranchList = _userProvisioningService.GetBranches(),
-                TrackList = _userProvisioningService.GetTracks(),
-                CourseList = _userProvisioningService.GetCourses()
+
+                // Initialize nested models to prevent null reference issues
+                StudentDetails = new StudentDetailsVm
+                {
+                    TrackList = _userProvisioningService.GetTracks()
+                },
+                InstructorDetails = new InstructorDetailsVm()
             };
 
             return View(model);
         }
 
         [HttpPost]
-        //  [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterVm model)
         {
+            // Custom validation for role-specific fields
+            ValidateRoleSpecificFields(model);
+
             if (!ModelState.IsValid)
             {
                 ReloadLookups(model);
@@ -167,19 +173,78 @@ namespace ExaminationSystem.Controllers
 
             await _userManager.AddToRoleAsync(user, role);
 
-            await _userProvisioningService.CreateDomainProfileAsync(user, role, model);
+            try
+            {
+                await _userProvisioningService.CreateDomainProfileAsync(user, role, model);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Rollback user creation if domain profile fails
+                await _userManager.DeleteAsync(user);
+                ModelState.AddModelError(string.Empty, ex.Message);
+                ReloadLookups(model);
+                return View(model);
+            }
 
+            TempData["SuccessMessage"] = $"User {model.Name} created successfully as {role}.";
             return RedirectToAction("Index", "Admin");
+        }
+
+        private void ValidateRoleSpecificFields(RegisterVm model)
+        {
+            if (model.Role == DefaultRoles.StudentRole.Name)
+            {
+                if (model.StudentDetails == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Student details are required.");
+                    return;
+                }
+
+                if (!model.StudentDetails.BranchId.HasValue)
+                    ModelState.AddModelError("StudentDetails.BranchId", "Branch is required for students.");
+
+                if (!model.StudentDetails.TrackId.HasValue)
+                    ModelState.AddModelError("StudentDetails.TrackId", "Track is required for students.");
+            }
+            else if (model.Role == DefaultRoles.InstructorRole.Name)
+            {
+                if (model.InstructorDetails == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Instructor details are required.");
+                    return;
+                }
+
+                if (!model.InstructorDetails.BranchId.HasValue)
+                    ModelState.AddModelError("InstructorDetails.BranchId", "Branch is required for instructors.");
+
+                if (model.InstructorDetails.SelectedCourseIds == null || !model.InstructorDetails.SelectedCourseIds.Any())
+                    ModelState.AddModelError("InstructorDetails.SelectedCourseIds", "At least one course must be selected for instructors.");
+            }
         }
 
         private void ReloadLookups(RegisterVm model)
         {
             model.RoleList = _userProvisioningService.GetRoles();
             model.BranchList = _userProvisioningService.GetBranches();
-            model.TrackList = _userProvisioningService.GetTracks();
-            model.CourseList = _userProvisioningService.GetCourses();
-        }
 
+            // Preserve nested model references
+            if (model.StudentDetails != null)
+            {
+                model.StudentDetails.TrackList = _userProvisioningService.GetTracks();
+            }
+            else
+            {
+                model.StudentDetails = new StudentDetailsVm
+                {
+                    TrackList = _userProvisioningService.GetTracks()
+                };
+            }
+
+            if (model.InstructorDetails == null)
+            {
+                model.InstructorDetails = new InstructorDetailsVm();
+            }
+        }
 
         #endregion
 

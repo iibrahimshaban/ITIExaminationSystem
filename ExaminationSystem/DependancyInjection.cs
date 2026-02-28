@@ -1,4 +1,9 @@
-﻿namespace ExaminationSystem;
+﻿using ExaminationSystem.Abstractions.Interfaces;
+using ExaminationSystem.Abstractions.Interfaces.Instructor;
+using ExaminationSystem.Services.Admin;
+using ExaminationSystem.Services.Instructor;
+
+namespace ExaminationSystem;
 
 public static class DependancyInjection
 {
@@ -24,9 +29,15 @@ public static class DependancyInjection
 
     private static IServiceCollection AddServiceRegistration(this IServiceCollection services)
     {
-        services.AddScoped<IInstructorServcie, InstructorService>();
 
-        return services;
+        services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<IUserProvisioningService, UserProvisioningService>();
+        services.AddScoped<IInstructorService, InstructorService>();
+        services.AddScoped<IInstructorExamService, InstructorExamService>();
+
+		
+
+		return services;
     }
     private static IServiceCollection AddIdentityConfiguration(this IServiceCollection services)
     {

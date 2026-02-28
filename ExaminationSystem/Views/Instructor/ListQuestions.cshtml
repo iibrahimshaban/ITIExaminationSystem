@@ -1,0 +1,341 @@
+﻿
+
+
+@model List<QuestionListVm>
+
+@{
+    ViewData["Title"] = "Exam Questions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var summary = ViewBag.Summary as ExamQuestionsSummaryVm;
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" asp-controller="Instructor">
+                    <i class="bi bi-house-door me-1"></i>Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="UnpublishedExams" asp-controller="Instructor">Unpublished Exams</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Questions</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-2">
+                <i class="bi bi-list-check text-primary me-2"></i>@summary?.ExamTitle
+            </h2>
+            <p class="text-muted mb-0">Manage questions for this exam</p>
+        </div>
+        <a asp-action="CreateQuestion" asp-route-examId="@summary?.ExamId" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Add Question
+        </a>
+    </div>
+
+    <!-- Success Message -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Summary Section -->
+    @if (summary != null)
+    {
+        <div class="row g-4 mb-4">
+            <!-- MCQ Count -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                            <i class="bi bi-list-check iconecolor fs-1"></i>
+                        </div>
+                        <h3 class="mb-2 fw-bold @(summary.MCQCount >= 7 ? "text-success" : "text-warning")">
+                            @summary.MCQCount
+                        </h3>
+                        <p class="text-muted mb-2">Multiple Choice Questions</p>
+                        @if (summary.MCQCount < 7)
+                        {
+                            <small class="text-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Minimum required: 7
+                            </small>
+                        }
+                        else
+                        {
+                            <small class="text-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Requirement met
+                            </small>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- True/False Count -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                            <i class="bi bi-toggle-on iconecolor fs-1"></i>
+                        </div>
+                        <h3 class="mb-2 fw-bold @(summary.TrueFalseCount >= 3 ? "text-success" : "text-warning")">
+                            @summary.TrueFalseCount
+                        </h3>
+                        <p class="text-muted mb-2">True/False Questions</p>
+                        @if (summary.TrueFalseCount < 3)
+                        {
+                            <small class="text-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Minimum required: 3
+                            </small>
+                        }
+                        else
+                        {
+                            <small class="text-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Requirement met
+                            </small>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Publish Status -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 @(summary.CanPublish ? "bg-success bg-opacity-10" : "bg-light")">
+                    <div class="card-body text-center">
+                        <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                            <i class="bi bi-@(summary.CanPublish ? "check-circle iconecolor" : "lock") text-primary fs-1"></i>
+                        </div>
+                        <h3 class="mb-2 fw-bold @(summary.CanPublish ? "text-success" : "text-muted")">
+                            @(summary.CanPublish ? "Ready" : "Not Ready")
+                        </h3>
+                        <p class="text-muted mb-2">Publish Status</p>
+                        @if (summary.CanPublish)
+                        {
+                            <form asp-action="Publish" asp-controller="Instructor" method="post" class="d-inline">
+                                <input type="hidden" name="examId" value="@summary.ExamId" />
+
+                                <button type="submit" class="btn btn-success btn-sm mt-2">
+                                    <i class="bi bi-check-circle iconecolor me-1"></i>
+                                    Publish Exam
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary btn-sm mt-2" disabled>
+                                <i class="bi bi-lock me-1"></i>Cannot Publish Yet
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Questions List -->
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="text-muted mb-3">No Questions Yet</h4>
+                <p class="text-muted mb-4">
+                    Start building your exam by adding questions. You need at least 7 MCQ and 3 True/False questions.
+                </p>
+                <a asp-action="CreateQuestion" asp-route-examId="@summary?.ExamId" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Add Your First Question
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul text-primary me-2"></i>Questions List
+                    </h5>
+                    <span class="badge bg-secondary rounded-pill px-3 py-2">
+                        @Model.Count @(Model.Count == 1 ? "Question" : "Questions")
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var question = Model[i];
+                        <div class="list-group-item question-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <!-- Question Header -->
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="badge bg-light text-dark border me-2 question-number">
+                                            Q@(i + 1)
+                                        </span>
+                                        <span class="badge @(question.Type == "MCQ" ? "bg-primary" : "bg-info") me-2">
+                                            <i class="bi bi-@(question.Type == "MCQ" ? "list-check" : "toggle-on") me-1"></i>
+                                            @question.Type
+                                        </span>
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-trophy me-1"></i>@question.Points pts
+                                        </span>
+                                    </div>
+
+                                    <!-- Question Body -->
+                                    <p class="mb-3 fw-medium">@question.Body</p>
+
+                                    <!-- Answer Section -->
+                                    @if (question.Type == "MCQ")
+                                    {
+                                        <div class="row g-2">
+                                            @foreach (var choice in question.Choices.OrderBy(c => c.ChoiceLetter))
+                                            {
+                                                <div class="col-md-6">
+                                                    <div class="choice-display p-2 rounded @(choice.IsCorrect ? "bg-success bg-opacity-10 border border-success" : "bg-light")">
+                                                        <div class="d-flex align-items-center">
+                                                            @if (choice.IsCorrect)
+                                                            {
+                                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="bi bi-circle text-muted me-2"></i>
+                                                            }
+                                                            <span class="badge bg-primary me-2">@choice.ChoiceLetter</span>
+                                                            <span class="@(choice.IsCorrect ? "fw-semibold" : "")">@choice.Body</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else if (question.Type == "TrueFalse")
+                                    {
+                                        <div class="alert @(question.CorrectAnswer == true ? "alert-success" : "alert-danger") mb-0" role="alert">
+                                            <i class="bi bi-@(question.CorrectAnswer == true ? "check-circle" : "x-circle") me-2"></i>
+                                            <strong>Correct Answer:</strong> @(question.CorrectAnswer == true ? "True" : "False")
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="mt-4">
+            <a asp-action="UnpublishedExams" asp-controller="Instructor" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Unpublished Exams
+            </a>
+        </div>
+    }
+</div>
+
+
+    <style>
+        :root {
+            --primary-color: #1B3C53;
+            --secondary-color: #456882;
+            --accent-color: #D2C1B6;
+            --background-color: #F9F3EF;
+        }
+
+        .bg-primary {
+            background-color: var(--primary-color) ;
+        }
+
+        .text-primary {
+            color: var(--primary-color) ;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+            .btn-primary:hover {
+                background-color: var(--secondary-color);
+                border-color: var(--secondary-color);
+            }
+
+        .btn-outline-secondary {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+            .btn-outline-secondary:hover {
+                background-color: var(--secondary-color);
+                border-color: var(--secondary-color);
+                color: #fff;
+            }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+            .breadcrumb-item a:hover {
+                color: var(--secondary-color);
+                text-decoration: underline;
+            }
+
+        .bg-secondary {
+            background-color: var(--secondary-color) ;
+        }
+
+        .badge.bg-secondary {
+            background-color: var(--secondary-color);
+        }
+
+        .question-item {
+            padding: 1.5rem;
+            transition: background-color 0.2s ease;
+        }
+
+            .question-item:hover {
+                background-color: rgba(27, 60, 83, 0.02);
+            }
+
+        .question-number {
+            font-size: 1rem;
+            padding: 0.5rem 0.75rem;
+            font-weight: 600;
+        }
+
+        .choice-display {
+            transition: all 0.2s ease;
+        }
+
+        .icon-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            border-radius: 0.5rem;
+        }
+
+        .iconecolor{
+          color: white !important;
+        }
+
+    </style>
+

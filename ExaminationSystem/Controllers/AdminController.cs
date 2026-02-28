@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ExaminationSystem.Entities;
 using ExaminationSystem.ViewModel;
+using ExaminationSystem.Abstractions.Consts;
 
 namespace ExaminationSystem.Controllers;
 
+//[Authorize(Roles = DefaultRoles.Admin.Name)]
 
 public class AdminController : Controller
 {
