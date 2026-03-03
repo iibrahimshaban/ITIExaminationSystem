@@ -1,9 +1,8 @@
 ﻿using ExaminationSystem.Abstractions.Consts;
 using ExaminationSystem.Abstractions.Interfaces;
-using ExaminationSystem.Entities;
-using ExaminationSystem.Persistence;
 using ExaminationSystem.ViewModel;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.SqlClient;
 
 namespace ExaminationSystem.Services.Admin
 {
@@ -95,7 +94,8 @@ namespace ExaminationSystem.Services.Admin
             var instructor = new ExaminationSystem.Entities.Instructor
             {
                 UserId = user.Id,
-                FirstName = user.Name ?? "Instructor",
+                FirstName = user.Name!.Split(" ")[0],
+                LastName = user.Name!.Split(" ")[1],
                 HireDate = DateOnly.FromDateTime(DateTime.UtcNow),
                 BranchId = details.BranchId.Value
             };
@@ -132,38 +132,25 @@ namespace ExaminationSystem.Services.Admin
                 UserId = user.Id,
                 BranchId = details.BranchId.Value,
                 TrackId = details.TrackId.Value,
-                FirstName = user.Name ?? "Student",
+                FirstName = user.Name!.Split(" ")[0],
+                LastName = user.Name!.Split(" ")[1],
+                Gender = true,
+                DateOfBirth = new DateOnly(2001, 10, 12),
                 EnrollmentDate = DateOnly.FromDateTime(DateTime.UtcNow),
                 Status = "Active"
             };
 
             _context.Students.Add(student);
-            await _context.SaveChangesAsync(); // Get Student.Id
+            await _context.SaveChangesAsync(); 
 
-            // 2️⃣ Get all active courses for the selected track
-            var trackCourses = await _context.Courses
-                .Where(c => c.IsActive && c.TrackId == details.TrackId.Value)
-                .Select(c => c.Id)
-                .ToListAsync();
+            var trackIdParam = new SqlParameter("@TrackId", details.TrackId.Value);
+            var userIdParam = new SqlParameter("@UserId", user.Id);
 
-            if (!trackCourses.Any())
-            {
-                // Optional: You might want to allow students without courses
-                // or throw an exception if courses are mandatory
-                // throw new InvalidOperationException("No active courses found for the selected track.");
-            }
-
-            // 3️⃣ Enroll student in all track courses
-            foreach (var courseId in trackCourses)
-            {
-                _context.StudentCourses.Add(new StudentCourse
-                {
-                    StudentId = student.Id,
-                    CourseId = courseId,
-                    StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                    Status = "Enrolled"
-                });
-            }
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_AssignTrackCoursesToStudent @TrackId, @UserId",
+                trackIdParam,
+                userIdParam
+            );
         }
     }
 }

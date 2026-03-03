@@ -54,11 +54,14 @@ namespace ExaminationSystem.Services.Instructor
                 return null;
 
             // 3️⃣ Student count (branch + track)
-            var studentsCount = await _context.StudentCourses
-                .CountAsync(sc =>
-                    sc.CourseId == course.Id &&
-                    sc.Student.BranchId == instructor.BranchId &&
-                    sc.Student.TrackId == course.TrackId);
+            var studentsCount = await (
+                from sc in _context.StudentCourses
+                join s in _context.Students on sc.StudentId equals s.Id
+                where sc.CourseId == course.Id
+                   && s.BranchId == instructor.BranchId
+                select s.Id
+            ).Distinct()
+             .CountAsync();
 
             // 4️⃣ Map to VM
             return new InstructorCourseDetailsVm

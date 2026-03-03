@@ -212,7 +212,7 @@ namespace ExaminationSystem.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Branches");
+                    b.ToTable("Branches", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.BranchTrack", b =>
@@ -244,7 +244,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("BranchTracks");
+                    b.ToTable("BranchTracks", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Choice", b =>
@@ -275,7 +275,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("Choices");
+                    b.ToTable("Choices", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Course", b =>
@@ -310,7 +310,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("Courses");
+                    b.ToTable("Courses", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.CourseInstructor", b =>
@@ -342,7 +342,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("InstructorId");
 
-                    b.ToTable("CourseInstructors");
+                    b.ToTable("CourseInstructors", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Exam", b =>
@@ -387,7 +387,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("IsPublished");
 
-                    b.ToTable("Exams");
+                    b.ToTable("Exams", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Instructor", b =>
@@ -442,7 +442,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Instructors");
+                    b.ToTable("Instructors", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Question", b =>
@@ -482,7 +482,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("ExamId");
 
-                    b.ToTable("Questions");
+                    b.ToTable("Questions", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Student", b =>
@@ -538,7 +538,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Students");
+                    b.ToTable("Students", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.StudentAnswer", b =>
@@ -577,7 +577,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("QuestionId", "SelectedChoiceId");
 
-                    b.ToTable("StudentAnswers");
+                    b.ToTable("StudentAnswers", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.StudentCourse", b =>
@@ -636,7 +636,7 @@ namespace ExaminationSystem.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_StudentCourse_Unique_Enrollment");
 
-                    b.ToTable("StudentCourses");
+                    b.ToTable("StudentCourses", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Submission", b =>
@@ -675,7 +675,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("StudentId", "ExamId");
 
-                    b.ToTable("Submissions");
+                    b.ToTable("Submissions", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Topic", b =>
@@ -705,7 +705,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Topics");
+                    b.ToTable("Topics", (string)null);
                 });
 
             modelBuilder.Entity("ExaminationSystem.Entities.Track", b =>
@@ -737,7 +737,7 @@ namespace ExaminationSystem.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tracks");
+                    b.ToTable("Tracks", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

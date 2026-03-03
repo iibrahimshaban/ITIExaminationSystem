@@ -7,7 +7,7 @@ public class StudentAnswer
     public int QuestionId { get; set; }
     public int? SelectedChoiceId { get; set; }      // for MCQ
     public bool? TFAnswer { get; set; }             // for T/F
-    public int Point { get; set; } 
+    public int? Point { get; set; } 
 
     public Submission Submission { get; set; } = default!;
     public Question Question { get; set; } = default!;

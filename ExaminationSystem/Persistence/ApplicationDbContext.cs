@@ -15,7 +15,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         modelBuilder.Entity<CouresExamForInstructor>(e => { e.HasNoKey().ToView(null); });
 
-        modelBuilder.Entity<ExamAssignmentResultVm>().HasNoKey();
+        modelBuilder.Entity<ExamListDto>(e => { e.HasNoKey().ToView(null); });
+
+        modelBuilder.Entity<ExamAssignmentResultVm>(e => { e.HasNoKey().ToView(null); });
 
         base.OnModelCreating(modelBuilder);
     }

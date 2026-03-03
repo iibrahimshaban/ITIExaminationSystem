@@ -20,9 +20,6 @@ public class StudentCourseConfiguration : IEntityTypeConfiguration<StudentCourse
         builder.Property(sc => sc.ExamGrade)
                .HasPrecision(5, 2);
 
-        builder.Property(sc => sc.FinalGrade)
-               .HasPrecision(5, 2);
-
         builder.Property(sc => sc.CourseworkGrade)
                .HasPrecision(5, 2);
 
@@ -51,5 +48,8 @@ public class StudentCourseConfiguration : IEntityTypeConfiguration<StudentCourse
         builder.HasIndex(sc => sc.StudentId);
         builder.HasIndex(sc => sc.CourseId);
         builder.HasIndex(sc => sc.Status);               // useful for filtering by status
+
+        builder.Property(sc => sc.FinalGrade)
+             .HasComputedColumnSql("[ExamGrade] + [CourseworkGrade]", stored: true);
     }
 }
